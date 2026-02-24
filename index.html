@@ -161,7 +161,7 @@
                 
                 <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
                     <h4 style="margin-top:0; color:var(--blue);"><i class="fab fa-telegram"></i> Telegram Mini App</h4>
-                    <p style="font-size:12px; color:#666;">BotFather'dan bot oching va Web App URL qismiga ushbu sizning shaxsiy havolangizni joylashtiring:</p>
+                    <p style="font-size:12px; color:#666;">BotFather'dan bot oching va Web App URL qismiga ushbu havolani joylashtiring:</p>
                     <input type="text" id="mini-app-link" readonly style="background:#f1f5f9; font-size:13px; cursor:copy;" onclick="this.select(); document.execCommand('copy'); myAlert('Havola nusxalandi!');">
                 </div>
                 <div style="margin-top: 10px;">
@@ -174,15 +174,9 @@
 
             <div class="card" style="background: #fff; border: 1px solid #ddd;">
                 <h3 style="margin-top:0"><i class="fab fa-bluetooth-b" style="color: var(--blue);"></i> Bluetooth Printer</h3>
-                <p style="font-size:12px; color:#666;">Qurilmani brauzer orqali to'g'ridan-to'g'ri ulash.</p>
                 <button class="btn btn-dark" onclick="connectBluetooth()"><i class="fas fa-search"></i> Qurilma qidirish</button>
             </div>
             
-            <div class="card" style="background: #eff6ff; border: 1px solid var(--blue);">
-                <h3 style="margin-top:0"><i class="fas fa-headset"></i> Support (Yordam)</h3>
-                <p style="font-size:14px; margin-bottom: 15px;">To'lov va tariflar bo'yicha adminga murojaat qiling.<br><br><i class="fas fa-phone-alt"></i> Tel: <b>+998 93 453 11 23</b><br><i class="fab fa-telegram"></i> Telegram: <b>@mamadaliyevv_o</b></p>
-                <a href="https://t.me/mamadaliyevv_o" target="_blank" class="btn btn-blue" style="text-decoration: none;">ADMINGA YOZISH</a>
-            </div>
             <button class="btn btn-red" onclick="saasLogout()" style="margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Tizimdan chiqish</button>
         </div>
 
@@ -207,13 +201,7 @@
         <div class="modal-box" style="text-align:center; padding: 30px 20px;">
             <i class="fas fa-lock" style="font-size:50px; color:var(--red); margin-bottom:15px;"></i>
             <h2 style="color:var(--dark); margin-top: 0;">Kechirasiz, hurmatli mijoz!</h2>
-            <p style="color: #666; font-size: 15px;">Sizning oylik to'lov muddatingiz o'z nihoyasiga yetdi yoki profilingiz bloklangan. Dasturdan foydalanishni davom ettirish uchun to'lovni amalga oshiring.</p>
-            <div style="background:#f8fafc; padding:15px; border-radius:12px; border: 1px dashed var(--blue); margin: 20px 0; text-align: left;">
-                <b style="color: var(--blue);">To'lov va ma'lumot uchun:</b><br><br>
-                <i class="fas fa-phone-alt"></i> Tel: <b>+998 93 453 11 23</b><br>
-                <i class="fab fa-telegram"></i> Telegram: <b>@mamadaliyevv_o</b>
-            </div>
-            <a href="https://t.me/mamadaliyevv_o" target="_blank" class="btn btn-blue" style="text-decoration: none;">Adminga yozish</a>
+            <p style="color: #666; font-size: 15px;">Sizning oylik to'lov muddatingiz o'z nihoyasiga yetdi yoki profilingiz bloklangan.</p>
             <button class="btn btn-outline" onclick="saasLogout()">Tizimdan chiqish</button>
         </div>
     </div>
@@ -262,6 +250,7 @@
     <div id="scanner-modal" class="modal" style="background:black;"><div style="width:100%; height:100%; display:flex; flex-direction:column;"><div id="reader" style="width:100%; flex-grow:1;"></div><button class="btn btn-red big-btn" style="margin:20px;" onclick="stopScanner()">YOPISH</button></div></div>
 
     <script>
+        // O'ZINGIZNING FIREBASE KODINGIZNI QO'YING
         const firebaseConfig = { apiKey: "AIzaSyA8F47YRcEPTIwyI7AjSeqXIyddFpz8orU", authDomain: "keeng-market.firebaseapp.com", databaseURL: "https://keeng-market-default-rtdb.firebaseio.com", projectId: "keeng-market", storageBucket: "keeng-market.firebasestorage.app", messagingSenderId: "688523074873", appId: "1:688523074873:web:016b69f98a238bd19d5ce8" };
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
 
@@ -300,6 +289,7 @@
             });
         }
 
+        // TIZIMGA KIRISH VA KODLARNI YUKLASH
         function checkLocalLogin() {
             const savedPhone = localStorage.getItem('saas_current_phone');
             if (savedPhone) {
@@ -312,18 +302,35 @@
         }
         function loadFromLocal(phone) { const localData = localStorage.getItem('saas_data_' + phone); if (localData) { const d = JSON.parse(localData); dokonSozlamalar = d.sozlamalar || dokonSozlamalar; currentTarif = dokonSozlamalar.tarif; DB = d.DB || []; DEBTS = d.DEBTS || []; ORDERS = d.ORDERS || []; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; } }
         function saveToLocal() { if (!currentUserPhone) return; const dataToSave = { sozlamalar: dokonSozlamalar, DB: DB, DEBTS: DEBTS, ORDERS: ORDERS, SESSION: SESSION, ARCHIVES: ARCHIVES }; localStorage.setItem('saas_data_' + currentUserPhone, JSON.stringify(dataToSave)); localStorage.setItem('saas_needs_sync', 'true'); }
+        
+        // SERVERGA SAQLASH (TARIF VA STATUSNI BAZADAN O'ZGARIShIGA XALAL BERMASLIK UCHUN ULAR QO'SHILMAYDI)
         function saveToCloud() { 
             if (!currentUserPhone) return; saveToLocal(); 
             if (navigator.onLine) { 
-                db.ref("saas_dokonlar/" + currentUserPhone).update({ DB: DB, DEBTS: DEBTS, SESSION: SESSION, ARCHIVES: ARCHIVES, ORDERS: ORDERS, "sozlamalar/dokon_nomi": dokonSozlamalar.dokon_nomi || "", "sozlamalar/telefon": dokonSozlamalar.telefon || "", "sozlamalar/chek_footer": dokonSozlamalar.chek_footer || "", "sozlamalar/tg_bot_token": dokonSozlamalar.tg_bot_token || "", "sozlamalar/tg_chat_id": dokonSozlamalar.tg_chat_id || "" }).then(() => { localStorage.removeItem('saas_needs_sync'); }).catch(e => console.log("Saqlash xatosi")); 
+                db.ref("saas_dokonlar/" + currentUserPhone).update({ 
+                    DB: DB, DEBTS: DEBTS, SESSION: SESSION, ARCHIVES: ARCHIVES, ORDERS: ORDERS, 
+                    "sozlamalar/dokon_nomi": dokonSozlamalar.dokon_nomi || "", 
+                    "sozlamalar/telefon": dokonSozlamalar.telefon || "", 
+                    "sozlamalar/chek_footer": dokonSozlamalar.chek_footer || "", 
+                    "sozlamalar/tg_bot_token": dokonSozlamalar.tg_bot_token || "", 
+                    "sozlamalar/tg_chat_id": dokonSozlamalar.tg_chat_id || "" 
+                }).then(() => { localStorage.removeItem('saas_needs_sync'); }).catch(e => console.log("Saqlash xatosi")); 
             } 
         }
         function syncToCloud() { if (localStorage.getItem('saas_needs_sync') === 'true' && currentUserPhone) saveToCloud(); }
         
+        // PULTDAN KELADIGAN MA'LUMOTLARNI TINGLASH (BU YERGA TARIF YANGILASH QO'SHILDI)
         function startListeningTenant(phone) {
             db.ref("saas_dokonlar/" + phone).on("value", snap => {
                 if (snap.exists()) {
-                    const d = snap.val(); dokonSozlamalar = d.sozlamalar || dokonSozlamalar; checkSubscription(); 
+                    const d = snap.val(); 
+                    dokonSozlamalar = d.sozlamalar || dokonSozlamalar; 
+                    
+                    // YANGI QO'SHILGAN QISMLAR (Tarif o'zgarganda darhol sezadi)
+                    currentTarif = dokonSozlamalar.tarif; 
+                    checkSubscription(); 
+                    applyTariffLocks(); // Knopkalarni yangilaydi
+                    
                     if (localStorage.getItem('saas_needs_sync') !== 'true') {
                         DB = d.DB || []; DEBTS = d.DEBTS || []; let rawOrders = d.ORDERS || []; ORDERS = Array.isArray(rawOrders) ? rawOrders : Object.values(rawOrders);
                         if (prevOrderCount !== -1 && ORDERS.length > prevOrderCount) { orderSound.play().catch(e=>console.log(e)); if(navigator.vibrate) navigator.vibrate([200,100,200]); }
@@ -381,12 +388,29 @@
             if (dokonSozlamalar.status === 'bloklangan' || today > expDate) { document.getElementById('modal-expired').style.display = 'flex'; } else { document.getElementById('modal-expired').style.display = 'none'; }
         }
 
+        // PULTDAN TARIF TUSHSA (yopiq oynada qolib ketmasligi uchun himoya qo'shildi)
+        function applyTariffLocks() { 
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('locked')); 
+            if (currentTarif === 'mini') { 
+                document.getElementById('nav-btn-hisobot').classList.add('locked'); 
+                document.getElementById('nav-btn-online').classList.add('locked'); 
+                if (document.getElementById('tab-hisobot').classList.contains('active-tab') || document.getElementById('tab-online').classList.contains('active-tab')) {
+                    switchTab('kassa', document.querySelector('.bottom-nav button'));
+                }
+            } else if (currentTarif === 'standart') { 
+                document.getElementById('nav-btn-online').classList.add('locked'); 
+                if (document.getElementById('tab-online').classList.contains('active-tab')) {
+                    switchTab('kassa', document.querySelector('.bottom-nav button'));
+                }
+            } 
+        }
+
         function switchTab(t, b) {
             if (currentTarif === 'mini' && (t === 'hisobot' || t === 'online')) return myAlert("Bu tarif mavjud emas. Supportga yozing.");
             if (currentTarif === 'standart' && t === 'online') return myAlert("Bu tarif mavjud emas. Supportga yozing.");
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab')); document.getElementById('tab-' + t).classList.add('active-tab'); document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active')); b.classList.add('active'); if (t === 'hisobot') renderStats();
         }
-        function applyTariffLocks() { document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('locked')); if (currentTarif === 'mini') { document.getElementById('nav-btn-hisobot').classList.add('locked'); document.getElementById('nav-btn-online').classList.add('locked'); } else if (currentTarif === 'standart') { document.getElementById('nav-btn-online').classList.add('locked'); } }
+        
         function refreshUI() { if (document.getElementById('screen-admin').classList.contains('active')) { renderKassa(); renderStock(); renderStats(); renderDebts(); updateCartUI(); renderOnlineOrders(); checkSubscription(); } if (document.getElementById('screen-client').classList.contains('active')) { if (activeClientCat) renderClientProducts(activeClientCat); else renderClientCategories(); updateClientCartUI(); } const b = document.getElementById('nav-badge'); const c = ORDERS ? ORDERS.length : 0; if (c > 0) { b.style.display = 'block'; b.innerText = c; } else b.style.display = 'none'; }
         function myAlert(msg) { document.getElementById('custom-alert-msg').innerText = msg; document.getElementById('custom-alert').style.display = 'flex'; } function myConfirm(msg, yesCb) { document.getElementById('custom-confirm-msg').innerText = msg; document.getElementById('custom-confirm').style.display = 'flex'; confirmCallback = yesCb; } document.getElementById('confirm-yes-btn').onclick = function() { if (confirmCallback) confirmCallback(); closeModal('custom-confirm'); }; function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -396,29 +420,21 @@
         function updateCartUI() { let t = 0, q = 0; document.getElementById('cart-items').innerHTML = CART.map((i, idx) => { t += i.cartQty * i.customPrice; q += i.cartQty; return `<div class="cart-item" style="margin-bottom:10px;"><div class="flex-between"><b>${i.name}</b><button style="color:red;border:none;background:none;font-size:18px;" onclick="removeFromCart(${idx})">🗑</button></div><div class="flex-between" style="margin-top:5px;"><div class="cart-controls" style="display:flex;gap:5px;"><button class="qty-btn" onclick="changeQty(${idx},-1)">-</button><input type="number" class="qty-input" value="${i.cartQty}" onchange="updateCartQtyManual(${idx},this.value)"><button class="qty-btn" onclick="changeQty(${idx},1)">+</button></div><input type="number" class="price-input" value="${i.customPrice}" onchange="changePrice(${idx},this.value)"></div></div>`; }).join(''); document.getElementById('cart-sum-total').innerText = t.toLocaleString() + " so'm"; const b = document.getElementById('cart-badge'); if (q > 0) { b.style.display = 'flex'; b.innerText = q; } else b.style.display = 'none'; }
         function changeQty(i, d) { if (d > 0 && CART[i].cartQty >= DB.find(x => x.id == CART[i].id).qty) return myAlert("Yetarli!"); CART[i].cartQty += d; if (CART[i].cartQty <= 0) CART.splice(i, 1); updateCartUI(); } function updateCartQtyManual(i, v) { let q = parseFloat(v); const o = DB.find(x => x.id == CART[i].id); if (q > o.qty) { myAlert("Yetarli!"); q = o.qty; } if (q <= 0) { myConfirm("O'chirasizmi?", () => { CART.splice(i, 1); updateCartUI(); }); } else { CART[i].cartQty = q; updateCartUI(); } } function changePrice(i, v) { CART[i].customPrice = parseFloat(v) || 0; updateCartUI(); } function removeFromCart(i) { CART.splice(i, 1); updateCartUI(); } function toggleCart() { document.getElementById('cart-panel').classList.toggle('open'); }
 
-        // CHECKOUT & iPRINT RASMGA OLISH
+        // CHECKOUT & IPRINT (MATNLI UZATISH)
         function checkoutConfirmation(type) { if (!CART.length) return myAlert("Savat bo'sh!"); if (type === 'nasiya') return openDebtModal(); tempType = type; const total = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0); const dName = dokonSozlamalar.dokon_nomi || "KEENG MARKET"; const dFoot = dokonSozlamalar.chek_footer || "Xaridingiz uchun rahmat!"; let h = `<div style="text-align:center;"><b>${dName}</b><br><small>Sana: ${new Date().toLocaleString()}</small><br><small>To'lov: ${type.toUpperCase()}</small></div><hr>`; CART.forEach(c => { h += `<div style="display:flex; justify-content:space-between;"><span>${c.name}</span><span>${c.cartQty}x${(c.customPrice).toLocaleString()}</span></div>`; }); h += `<hr><div style="display:flex; justify-content:space-between; font-weight:bold; font-size:18px;"><span>JAMI:</span><span>${total.toLocaleString()}</span></div>`; document.getElementById('admin-check-content').innerHTML = h; let ph = `<div class="chk-header">${dName}</div><div class="chk-sub">Do'kon cheki<br>${new Date().toLocaleString()}</div>`; CART.forEach(c => { ph += `<div class="chk-item"><span style="flex-grow:1">${c.name}</span><span style="white-space:nowrap; margin-left:10px;">${c.cartQty}x${c.customPrice}</span></div>`; }); ph += `<div class="chk-total"><span>ITOGO:</span><span>${total.toLocaleString()}</span></div><div class="chk-footer">${dFoot}<br><span class="chk-emoji">😊</span></div>`; document.getElementById('printable-area').innerHTML = ph; document.getElementById('modal-admin-check').style.display = 'flex'; }
         
         function shareToIPrint() {
-            const checkDiv = document.getElementById('admin-check-content');
-            const oldBorder = checkDiv.style.border;
-            checkDiv.style.border = "none";
-            checkDiv.style.padding = "20px";
-            checkDiv.style.background = "#ffffff";
-            checkDiv.style.color = "#000000";
+            const dName = dokonSozlamalar.dokon_nomi || "KEENG MARKET";
+            const total = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0);
+            let text = `      ${dName}\n--------------------------------\nSana: ${new Date().toLocaleString()}\nTo'lov turi: ${tempType ? tempType.toUpperCase() : ''}\n--------------------------------\n`;
+            CART.forEach(c => { text += `${c.name}\n${c.cartQty} x ${c.customPrice.toLocaleString()} = ${(c.cartQty * c.customPrice).toLocaleString()}\n`; });
+            text += `--------------------------------\nJAMI: ${total.toLocaleString()} so'm\n\n${dokonSozlamalar.chek_footer || "Xaridingiz uchun rahmat!"}\n\n\n`;
 
-            html2canvas(checkDiv, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
-                checkDiv.style.border = oldBorder;
-                checkDiv.style.padding = "15px";
-                canvas.toBlob(blob => {
-                    const file = new File([blob], "chek.png", { type: "image/png" });
-                    if (navigator.share) {
-                        navigator.share({ title: 'Xarid cheki', files: [file] }).catch(e => { myAlert("Ulashish bekor qilindi yoki xatolik."); });
-                    } else {
-                        myAlert("Qurilmangiz rasm ulashishni qo'llab-quvvatlamaydi.");
-                    }
-                }, "image/png");
-            }).catch(e => { myAlert("Rasmga olishda xatolik yuz berdi!"); });
+            if (navigator.clipboard) navigator.clipboard.writeText(text).catch(err => {});
+
+            let encodedText = encodeURIComponent(text);
+            let intentUrl = "intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=" + encodedText + ";end";
+            window.location.href = intentUrl;
         }
 
         function completeCheckout() { const total = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0); processSale(tempType, total); closeModal('modal-admin-check'); } function printReceipt() { window.print(); }
@@ -427,14 +443,7 @@
             const p = CART.reduce((a, b) => a + (b.customPrice - (parseFloat(b.buy) || 0)) * b.cartQty, 0); 
             CART.forEach(c => { const x = DB.find(i => i.id === c.id); if (x) x.qty -= c.cartQty; }); 
             SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [...CART], total, profit: p, type }); 
-            CART = []; 
-            updateCartUI(); 
-            toggleCart(); 
-            saveToCloud(); 
-            renderStats(); 
-            renderKassa(); 
-            renderStock(); 
-            myAlert("Tasdiqlandi!"); 
+            CART = []; updateCartUI(); toggleCart(); saveToCloud(); renderStats(); renderKassa(); renderStock(); myAlert("Tasdiqlandi!"); 
         }
 
         // OMBOR
@@ -445,60 +454,12 @@
         function acceptOrder(id) { myConfirm("Qabul?", () => { const o = ORDERS.find(x => x.id === id); o.items.forEach(i => { const p = DB.find(x => x.id === i.id); if (p) p.qty -= i.qty; }); const pr = o.items.reduce((a, b) => a + (b.sell - (parseFloat(b.buy) || 0)) * b.qty, 0); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: o.items, total: o.total, profit: pr, type: 'naqd', note: `Online: ${o.client}` }); ORDERS = ORDERS.filter(x => x.id !== id); saveToCloud(); refreshUI(); myAlert("Qabul qilindi!"); }); } 
         function rejectOrder(id) { myConfirm("O'chirasizmi?", () => { ORDERS = ORDERS.filter(x => x.id !== id); saveToCloud(); renderOnlineOrders(); }); }
         
-        // NASIYA (YANGILANGAN MANTIQ)
+        // NASIYA
         function openDebtModal() { if (!CART.length) return myAlert("Savat bo'sh!"); document.getElementById('debt-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-debt-create').style.display = 'flex'; } 
         function confirmDebt() { const n = document.getElementById('debt-customer-name').value; if (!n) return myAlert("Ism kerak!"); const t = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0); const p = CART.reduce((a, b) => a + (b.customPrice - (parseFloat(b.buy) || 0)) * b.cartQty, 0); CART.forEach(c => { const x = DB.find(i => i.id === c.id); if (x) x.qty -= c.cartQty; }); let d = DEBTS.find(x => x.name.toLowerCase() === n.toLowerCase()); if (!d) { d = { id: Date.now(), name: n, phone: document.getElementById('debt-customer-phone').value, balance: 0, history: [] }; DEBTS.push(d); } d.balance += t; d.history.push({ date: new Date().toLocaleString(), type: 'Nasiya xarid', amount: t, items: [...CART] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [...CART], total: t, profit: p, type: 'nasiya' }); CART = []; updateCartUI(); closeModal('modal-debt-create'); toggleCart(); saveToCloud(); renderStats(); renderKassa(); renderStock(); renderDebts(); myAlert("Nasiya yozildi!"); } 
-        
-        function renderDebts() { 
-            const s = document.getElementById('debt-search').value.toLowerCase(); 
-            // 0 ga teng bo'lmagan HAMMANI ko'rsatish
-            document.getElementById('debt-list').innerHTML = DEBTS.filter(d => d.name.toLowerCase().includes(s) && d.balance !== 0).map(d => {
-                let balText = d.balance > 0 ? `<b style="color:var(--red)">Qarz: ${d.balance.toLocaleString()}</b>` : `<b style="color:var(--green)">Haqdor: ${Math.abs(d.balance).toLocaleString()}</b>`;
-                return `<div class="card flex-between" onclick="showDebtInfo(${d.id})"><div><b>${d.name}</b><br><small>${d.phone || ''}</small></div>${balText}</div>`;
-            }).join(''); 
-            // Jami qarz summasi faqat qarzga botganlardan olinadi
-            document.getElementById('total-debt-sum').innerText = DEBTS.filter(d => d.balance > 0).reduce((a, b) => a + b.balance, 0).toLocaleString() + " so'm"; 
-        } 
-        
-        let curDebtId = null; 
-        function showDebtInfo(id) { 
-            curDebtId = id; 
-            const d = DEBTS.find(x => x.id == id); 
-            document.getElementById('debt-info-name').innerText = d.name; 
-            const balEl = document.getElementById('debt-info-balance');
-            
-            if (d.balance > 0) {
-                balEl.innerText = "Qarz: " + d.balance.toLocaleString();
-                balEl.style.color = "var(--red)";
-            } else {
-                balEl.innerText = "Haqdor: " + Math.abs(d.balance).toLocaleString();
-                balEl.style.color = "var(--green)";
-            }
-
-            document.getElementById('debt-history-list').innerHTML = d.history.slice().reverse().map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0;"><div>${h.date}<br><small>${h.type}</small></div><b style="color:${h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)')}">${h.amount.toLocaleString()}</b></div>`).join(''); 
-            document.getElementById('modal-debt-info').style.display = 'flex'; 
-        } 
-        
-        function payDebt(type) { 
-            const a = parseFloat(document.getElementById('debt-pay-amount').value); 
-            if (!a || a <= 0) return myAlert("Xato summa!"); 
-            const d = DEBTS.find(x => x.id == curDebtId); 
-            
-            if (type === 'kirim') {
-                d.balance -= a; 
-                d.history.push({ date: new Date().toLocaleString(), type: 'Pul olindi', amount: a, items: [] }); 
-                SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: a, profit: 0, type: 'naqd', note: 'Qarz uzildi: ' + d.name }); 
-            } else {
-                d.balance += a; 
-                d.history.push({ date: new Date().toLocaleString(), type: 'Pul berildi', amount: a, items: [] }); 
-                SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: -a, profit: 0, type: 'naqd', note: 'Haqdorga berildi: ' + d.name }); 
-            }
-
-            document.getElementById('debt-pay-amount').value = ''; 
-            closeModal('modal-debt-info'); 
-            saveToCloud(); renderStats(); renderDebts(); 
-            myAlert("Saqlandi!"); 
-        }
+        function renderDebts() { const s = document.getElementById('debt-search').value.toLowerCase(); document.getElementById('debt-list').innerHTML = DEBTS.filter(d => d.name.toLowerCase().includes(s) && d.balance !== 0).map(d => { let balText = d.balance > 0 ? `<b style="color:var(--red)">Qarz: ${d.balance.toLocaleString()}</b>` : `<b style="color:var(--green)">Haqdor: ${Math.abs(d.balance).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showDebtInfo(${d.id})"><div><b>${d.name}</b><br><small>${d.phone || ''}</small></div>${balText}</div>`; }).join(''); document.getElementById('total-debt-sum').innerText = DEBTS.filter(d => d.balance > 0).reduce((a, b) => a + b.balance, 0).toLocaleString() + " so'm"; } 
+        let curDebtId = null; function showDebtInfo(id) { curDebtId = id; const d = DEBTS.find(x => x.id == id); document.getElementById('debt-info-name').innerText = d.name; const balEl = document.getElementById('debt-info-balance'); if (d.balance > 0) { balEl.innerText = "Qarz: " + d.balance.toLocaleString(); balEl.style.color = "var(--red)"; } else { balEl.innerText = "Haqdor: " + Math.abs(d.balance).toLocaleString(); balEl.style.color = "var(--green)"; } document.getElementById('debt-history-list').innerHTML = d.history.slice().reverse().map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0;"><div>${h.date}<br><small>${h.type}</small></div><b style="color:${h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)')}">${h.amount.toLocaleString()}</b></div>`).join(''); document.getElementById('modal-debt-info').style.display = 'flex'; } 
+        function payDebt(type) { const a = parseFloat(document.getElementById('debt-pay-amount').value); if (!a || a <= 0) return myAlert("Xato summa!"); const d = DEBTS.find(x => x.id == curDebtId); if (type === 'kirim') { d.balance -= a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul olindi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: a, profit: 0, type: 'naqd', note: 'Qarz uzildi: ' + d.name }); } else { d.balance += a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul berildi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: -a, profit: 0, type: 'naqd', note: 'Haqdorga berildi: ' + d.name }); } document.getElementById('debt-pay-amount').value = ''; closeModal('modal-debt-info'); saveToCloud(); renderStats(); renderDebts(); myAlert("Saqlandi!"); }
 
         // HISOBOT
         function renderStats() { if (!SESSION.sales) SESSION.sales = []; document.getElementById('stat-naqd').innerText = SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-plastik').innerText = SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-profit').innerText = SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; } function closeDay() { myConfirm("Yopasizmi?", () => { const r = { date: new Date().toLocaleString(), totalNaqd: SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0), totalPlastik: SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0), totalNasiya: SESSION.sales.filter(x => x.type == 'nasiya').reduce((a, b) => a + b.total, 0), profit: SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0), details: JSON.parse(JSON.stringify(SESSION.sales)), comment: document.getElementById('close-comment').value }; if (!ARCHIVES.daily) ARCHIVES.daily = []; ARCHIVES.daily.push(r); SESSION.sales = []; SESSION.date = new Date().toLocaleDateString(); saveToCloud(); renderStats(); myAlert("Kun yopildi!"); }); } function closePeriod(t) { myConfirm("Saqlaysizmi?", () => { const r = { date: new Date().toLocaleString(), type: t, summaryProfit: (ARCHIVES.daily || []).slice(-7).reduce((a, b) => a + b.profit, 0) }; if (!ARCHIVES[t == 'week' ? 'weekly' : 'monthly']) ARCHIVES[t == 'week' ? 'weekly' : 'monthly'] = []; ARCHIVES[t == 'week' ? 'weekly' : 'monthly'].push(r); saveToCloud(); myAlert("Saqlandi!"); }); } function renderArchive(t) { const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = 0; if (t === 'day') total = (i.totalNaqd || 0) + (i.totalPlastik || 0) + (i.totalNasiya || 0); let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } function buildAndShowTable(ti, tr, isT=false) { document.getElementById('archive-title').innerText = ti; if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; [...tr].reverse().forEach(s => { let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${s.total.toLocaleString()}</b><br><span class="tag-${s.type}">${s.type.toUpperCase()}</span></td>${b}</tr>`; }); h += `</tbody></table>`; document.getElementById('archive-detail-content').innerHTML = h; document.getElementById('modal-archive-detail').style.display = 'flex'; } function returnSale(id) { myConfirm("Vozvrat?", () => { const idx = SESSION.sales.findIndex(s => s.id === id); if (idx === -1) return; const s = SESSION.sales[idx]; if (s.items) s.items.forEach(i => { const d = DB.find(x => x.id === i.id); if (d) d.qty += i.cartQty; }); SESSION.sales.splice(idx, 1); saveToCloud(); refreshUI(); closeModal('modal-archive-detail'); myAlert("Vozvrat qilindi!"); }); }

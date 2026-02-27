@@ -110,8 +110,14 @@
                 <div id="cart-items" style="overflow-y:auto; flex-grow:1; padding:15px;"></div>
                 <div style="padding: 15px; border-top: 1px solid #eee; background: white;">
                     <div class="flex-between" style="margin-bottom: 10px; font-size: 18px;"><span>Jami:</span><b id="cart-sum-total">0 so'm</b></div>
-                    <div class="grid-2"><button class="btn btn-green" onclick="showReceiptModal('naqd')">NAQD</button><button class="btn btn-blue" onclick="showReceiptModal('plastik')">PLASTIK</button></div>
-                    <button class="btn btn-orange" onclick="openDebtModal()">NASIYA (QARZGA)</button>
+                    <div class="grid-2">
+                        <button class="btn btn-green" onclick="showReceiptModal('naqd')">NAQD</button>
+                        <button class="btn btn-blue" onclick="showReceiptModal('plastik')">PLASTIK</button>
+                    </div>
+                    <div class="grid-2">
+                        <button class="btn btn-orange" onclick="openDebtModal()">NASIYA</button>
+                        <button class="btn btn-outline" style="border-color:var(--blue); color:var(--blue);" onclick="openClientCheckoutModal()">KLIENT <i class="fas fa-user-check"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -137,7 +143,10 @@
                 <input type="text" id="p-name" placeholder="Nomi">
                 <div class="grid-2"><select id="p-unit"><option value="dona">Dona</option><option value="kg">Kg</option></select><input type="number" id="p-qty" placeholder="Soni"></div>
                 <div class="grid-2"><input type="number" id="p-buy" placeholder="Kelish"><input type="number" id="p-sell" placeholder="Sotish"></div>
+                
                 <div class="grid-2"><button class="btn btn-blue" onclick="saveProduct()">SAQLASH</button><button class="btn btn-outline" onclick="clearForm()">TOZALASH</button></div>
+                
+                <button class="btn btn-dark" style="margin-top:10px; background:#475569;" onclick="forceSyncDb()"><i class="fas fa-cloud-upload-alt"></i> BAZAGA UZATISH</button>
             </div>
             <div id="stock-summary-container"></div><input type="text" id="stock-search" placeholder="Qidirish..." oninput="renderStock()" style="margin-bottom:10px;"><div id="stock-list"></div>
         </div>
@@ -146,6 +155,13 @@
             <div class="card" style="background: #fff7ed; border: 1px solid #fdba74;"><span style="color: #c2410c;">Faqat Qarzlar jami:</span><h2 id="total-debt-sum" style="margin: 5px 0; color: #9a3412;">0 so'm</h2></div>
             <input type="text" id="debt-search" placeholder="Qidirish..." oninput="renderDebts()">
             <div id="debt-list"></div>
+        </div>
+
+        <div id="tab-klientlar" class="tab-content">
+            <h3>Doimiy Klientlar</h3>
+            <p style="font-size:12px; color:#666; margin-top:-10px;">Klientlarning xarid tarixini nazorat qilish.</p>
+            <input type="text" id="client-search" placeholder="Qidirish..." oninput="renderClientsTab()">
+            <div id="client-list-container"></div>
         </div>
 
         <div id="tab-online" class="tab-content">
@@ -198,6 +214,7 @@
             <button class="nav-btn active" onclick="switchTab('kassa', this)"><i class="fas fa-cash-register"></i> Kassa</button>
             <button class="nav-btn" onclick="switchTab('ombor', this)"><i class="fas fa-box"></i> Ombor</button>
             <button class="nav-btn" onclick="switchTab('nasiya', this)"><i class="fas fa-user-clock"></i> Nasiya</button>
+            <button class="nav-btn" onclick="switchTab('klientlar', this)"><i class="fas fa-users"></i> Klient</button>
             <button class="nav-btn" id="nav-btn-online" onclick="switchTab('online', this)"><i class="fas fa-globe"></i> Online <span id="nav-badge" class="badge">0</span></button>
             <button class="nav-btn" id="nav-btn-hisobot" onclick="switchTab('hisobot', this)"><i class="fas fa-chart-pie"></i> Hisobot</button>
             <button class="nav-btn" onclick="switchTab('sozlamalar', this)"><i class="fas fa-cog"></i> Sozlama</button>
@@ -257,6 +274,25 @@
             <div class="grid-2"><button class="btn btn-green" onclick="payDebt('kirim')">PUL OLISH</button><button class="btn btn-red" onclick="payDebt('chiqim')">PUL BERISH</button></div>
         </div>
     </div>
+
+    <div id="modal-client-create" class="modal">
+        <div class="modal-box">
+            <h3>Klientga Sotish (Ro'yxat)</h3>
+            <p>Jami: <b id="client-modal-total">0</b></p>
+            <input type="text" id="client-customer-name" placeholder="Klient Ismi">
+            <input type="text" id="client-customer-phone" placeholder="Tel">
+            <button class="btn btn-green" onclick="confirmClientCheckout()">DAVOM ETISH</button>
+            <button class="btn btn-red" onclick="closeModal('modal-client-create')">BEKOR</button>
+        </div>
+    </div>
+
+    <div id="modal-client-info" class="modal">
+        <div class="modal-box" style="height:80vh;">
+            <div class="flex-between"><h3 id="client-info-name">Klient</h3><button onclick="closeModal('modal-client-info')" style="background:none; border:none; font-size:20px;">✕</button></div>
+            <div style="background:#f1f5f9; padding:10px; border-radius:10px; flex-grow:1; overflow-y:auto; margin-bottom:10px;"><div id="client-history-list"></div></div>
+            <button class="btn btn-red" onclick="closeModal('modal-client-info')">YOPISH</button>
+        </div>
+    </div>
     
     <div id="modal-archive-detail" class="modal"><div class="modal-box" style="height:90vh;"><div class="flex-between"><h3 id="archive-title" style="margin:0">Tafsilotlar</h3><button onclick="closeModal('modal-archive-detail')" style="background:none; border:none; font-size:24px;">×</button></div><div id="archive-detail-content" style="flex-grow:1; overflow-y:auto; margin-top:10px;"></div><button class="btn btn-red" style="margin-top:10px;" onclick="closeModal('modal-archive-detail')">YOPISH</button></div></div>
     <div id="scanner-modal" class="modal" style="background:black;"><div style="width:100%; height:100%; display:flex; flex-direction:column;"><div id="reader" style="width:100%; flex-grow:1;"></div><button class="btn btn-red big-btn" style="margin:20px;" onclick="stopScanner()">YOPISH</button></div></div>
@@ -267,10 +303,10 @@
 
         let currentTarif = null, currentUserPhone = null;
         let dokonSozlamalar = { dokon_nomi: "Do'kon", telefon: "", chek_footer: "Xaridingiz uchun rahmat!", obuna_tugash_sanasi: "", status: "faol" };
-        let DB = [], CART = [], clientCart = [], DEBTS = [], ORDERS = [];
+        let DB = [], CART = [], clientCart = [], DEBTS = [], CLIENTS = [], ORDERS = [];
         let SESSION = { sales: [], date: null }, ARCHIVES = { daily: [], weekly: [], monthly: [] };
         let html5QrCode = null, clientLoc = null, activeClientCat = null, confirmCallback = null, scanLock = false, tempType = null;
-        let tempDebtData = null; 
+        let tempDebtData = null, tempClientData = null; 
         
         const orderSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
         let prevOrderCount = -1;
@@ -317,14 +353,14 @@
                 if (navigator.onLine) { startListeningTenant(currentUserPhone); syncToCloud(); }
             }
         }
-        function loadFromLocal(phone) { const localData = localStorage.getItem('saas_data_' + phone); if (localData) { const d = JSON.parse(localData); dokonSozlamalar = d.sozlamalar || dokonSozlamalar; currentTarif = dokonSozlamalar.tarif; DB = d.DB || []; DEBTS = d.DEBTS || []; let rawOrders = d.ORDERS || []; ORDERS = Array.isArray(rawOrders) ? rawOrders : Object.values(rawOrders); prevOrderCount = ORDERS.length; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; } }
-        function saveToLocal() { if (!currentUserPhone) return; const dataToSave = { sozlamalar: dokonSozlamalar, DB: DB, DEBTS: DEBTS, ORDERS: ORDERS, SESSION: SESSION, ARCHIVES: ARCHIVES }; localStorage.setItem('saas_data_' + currentUserPhone, JSON.stringify(dataToSave)); localStorage.setItem('saas_needs_sync', 'true'); }
+        function loadFromLocal(phone) { const localData = localStorage.getItem('saas_data_' + phone); if (localData) { const d = JSON.parse(localData); dokonSozlamalar = d.sozlamalar || dokonSozlamalar; currentTarif = dokonSozlamalar.tarif; DB = d.DB || []; DEBTS = d.DEBTS || []; CLIENTS = d.CLIENTS || []; let rawOrders = d.ORDERS || []; ORDERS = Array.isArray(rawOrders) ? rawOrders : Object.values(rawOrders); prevOrderCount = ORDERS.length; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; } }
+        function saveToLocal() { if (!currentUserPhone) return; const dataToSave = { sozlamalar: dokonSozlamalar, DB: DB, DEBTS: DEBTS, CLIENTS: CLIENTS, ORDERS: ORDERS, SESSION: SESSION, ARCHIVES: ARCHIVES }; localStorage.setItem('saas_data_' + currentUserPhone, JSON.stringify(dataToSave)); localStorage.setItem('saas_needs_sync', 'true'); }
         
         function saveToCloud() { 
             if (!currentUserPhone) return; saveToLocal(); 
             if (navigator.onLine) { 
                 db.ref("saas_dokonlar/" + currentUserPhone).update({ 
-                    DB: DB, DEBTS: DEBTS, SESSION: SESSION, ARCHIVES: ARCHIVES, 
+                    DB: DB, DEBTS: DEBTS, CLIENTS: CLIENTS, SESSION: SESSION, ARCHIVES: ARCHIVES, 
                     "sozlamalar/dokon_nomi": dokonSozlamalar.dokon_nomi || "", 
                     "sozlamalar/telefon": dokonSozlamalar.telefon || "", 
                     "sozlamalar/chek_footer": dokonSozlamalar.chek_footer || "", 
@@ -335,6 +371,13 @@
         }
         function syncToCloud() { if (localStorage.getItem('saas_needs_sync') === 'true' && currentUserPhone) saveToCloud(); }
         
+        // OMBORNI BAZAGA UZATISH TUGMASI UCHUN
+        function forceSyncDb() {
+            if (!navigator.onLine) return myAlert("Internet aloqasi yo'q!");
+            saveToCloud();
+            myAlert("Ombor muvaffaqiyatli bazaga uzatildi! ✅");
+        }
+
         function startListeningTenant(phone) {
             db.ref("saas_dokonlar/" + phone).on("value", snap => {
                 if (snap.exists()) {
@@ -350,7 +393,7 @@
                     prevOrderCount = newOrders.length; ORDERS = newOrders;
 
                     if (localStorage.getItem('saas_needs_sync') !== 'true') {
-                        DB = d.DB || []; DEBTS = d.DEBTS || []; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; saveToLocal(); 
+                        DB = d.DB || []; DEBTS = d.DEBTS || []; CLIENTS = d.CLIENTS || []; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; saveToLocal(); 
                     }
                     refreshUI(); 
                 }
@@ -367,7 +410,7 @@
             db.ref("saas_dokonlar/" + phone).once("value", snap => {
                 if(snap.exists()) return myAlert("Bu raqam band.");
                 let exp = new Date(); exp.setDate(exp.getDate() + 30); 
-                const newStore = { sozlamalar: { dokon_nomi: name, telefon: phone, parol: pass, tarif: tarif, obuna_tugash_sanasi: exp.toISOString().split('T')[0], ro_yxatdan_sana: new Date().toLocaleDateString(), status: "faol", chek_footer: "Xaridingiz uchun rahmat!", tg_bot_token: "", tg_chat_id: "" }, DB: [], DEBTS: [], ORDERS: {}, SESSION: { sales: [], date: new Date().toLocaleDateString() }, ARCHIVES: { daily: [], weekly: [], monthly: [] } };
+                const newStore = { sozlamalar: { dokon_nomi: name, telefon: phone, parol: pass, tarif: tarif, obuna_tugash_sanasi: exp.toISOString().split('T')[0], ro_yxatdan_sana: new Date().toLocaleDateString(), status: "faol", chek_footer: "Xaridingiz uchun rahmat!", tg_bot_token: "", tg_chat_id: "" }, DB: [], DEBTS: [], CLIENTS: [], ORDERS: {}, SESSION: { sales: [], date: new Date().toLocaleDateString() }, ARCHIVES: { daily: [], weekly: [], monthly: [] } };
                 db.ref("saas_dokonlar/" + phone).set(newStore).then(() => { myAlert("Muvaffaqiyatli! 30 kun muddat berildi."); toggleAuthMode('login'); document.getElementById('login-phone').value = phone; document.getElementById('login-pass').value = pass; });
             });
         }
@@ -385,7 +428,7 @@
                 if(data.sozlamalar.parol !== pass) return myAlert("Parol xato!");
                 if(data.sozlamalar.status === 'bloklangan') return myAlert("Profilingiz admin tomonidan bloklangan!");
                 currentUserPhone = phone; currentTarif = data.sozlamalar.tarif; localStorage.setItem('saas_current_phone', phone);
-                dokonSozlamalar = data.sozlamalar; DB = data.DB || []; DEBTS = data.DEBTS || []; let rawOrders = data.ORDERS || {}; ORDERS = Array.isArray(rawOrders) ? rawOrders.filter(Boolean) : Object.values(rawOrders); prevOrderCount = ORDERS.length; SESSION = data.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = data.ARCHIVES || { daily: [], weekly: [], monthly: [] }; saveToLocal();
+                dokonSozlamalar = data.sozlamalar; DB = data.DB || []; DEBTS = data.DEBTS || []; CLIENTS = data.CLIENTS || []; let rawOrders = data.ORDERS || {}; ORDERS = Array.isArray(rawOrders) ? rawOrders.filter(Boolean) : Object.values(rawOrders); prevOrderCount = ORDERS.length; SESSION = data.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = data.ARCHIVES || { daily: [], weekly: [], monthly: [] }; saveToLocal();
                 document.getElementById('set-dokon-nomi').value = dokonSozlamalar.dokon_nomi || ""; document.getElementById('set-telefon').value = dokonSozlamalar.telefon || ""; document.getElementById('set-chek-footer').value = dokonSozlamalar.chek_footer || ""; document.getElementById('set-tg-token').value = dokonSozlamalar.tg_bot_token || ""; document.getElementById('set-tg-chat').value = dokonSozlamalar.tg_chat_id || "";
                 const myUrl = window.location.href.split('?')[0]; document.getElementById('mini-app-link').value = myUrl + "?shop=" + phone;
                 startListeningTenant(phone); document.getElementById('screen-login').classList.remove('active'); document.getElementById('screen-admin').classList.add('active'); applyTariffLocks(); refreshUI();
@@ -421,10 +464,12 @@
         function switchTab(t, b) {
             if (currentTarif === 'mini' && (t === 'hisobot' || t === 'online')) return myAlert("Bu tarif mavjud emas. Supportga yozing.");
             if (currentTarif === 'standart' && t === 'online') return myAlert("Bu tarif mavjud emas. Supportga yozing.");
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab')); document.getElementById('tab-' + t).classList.add('active-tab'); document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active')); b.classList.add('active'); if (t === 'hisobot') renderStats();
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab')); document.getElementById('tab-' + t).classList.add('active-tab'); document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active')); b.classList.add('active'); 
+            if (t === 'hisobot') renderStats();
+            if (t === 'klientlar') renderClientsTab();
         }
         
-        function refreshUI() { if (document.getElementById('screen-admin').classList.contains('active')) { renderKassa(); renderStock(); renderStats(); renderDebts(); updateCartUI(); renderOnlineOrders(); checkSubscription(); } if (document.getElementById('screen-client').classList.contains('active')) { if (activeClientCat) renderClientProducts(activeClientCat); else renderClientCategories(); updateClientCartUI(); } const b = document.getElementById('nav-badge'); const c = ORDERS ? ORDERS.length : 0; if (c > 0) { b.style.display = 'block'; b.innerText = c; } else b.style.display = 'none'; }
+        function refreshUI() { if (document.getElementById('screen-admin').classList.contains('active')) { renderKassa(); renderStock(); renderStats(); renderDebts(); renderClientsTab(); updateCartUI(); renderOnlineOrders(); checkSubscription(); } if (document.getElementById('screen-client').classList.contains('active')) { if (activeClientCat) renderClientProducts(activeClientCat); else renderClientCategories(); updateClientCartUI(); } const b = document.getElementById('nav-badge'); const c = ORDERS ? ORDERS.length : 0; if (c > 0) { b.style.display = 'block'; b.innerText = c; } else b.style.display = 'none'; }
         function myAlert(msg) { document.getElementById('custom-alert-msg').innerText = msg; document.getElementById('custom-alert').style.display = 'flex'; } function myConfirm(msg, yesCb) { document.getElementById('custom-confirm-msg').innerText = msg; document.getElementById('custom-confirm').style.display = 'flex'; confirmCallback = yesCb; } document.getElementById('confirm-yes-btn').onclick = function() { if (confirmCallback) confirmCallback(); closeModal('custom-confirm'); }; function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         function renderKassa() { const s = document.getElementById('search-inp').value.toLowerCase(); document.getElementById('kassa-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || p.cat.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).map(p => `<div class="card flex-between" onclick="addToCart(${p.id})"><div><span class="cat-tag">${p.cat}</span><div style="font-weight:bold;">${p.name}</div><small style="color:#666">Ombor: ${p.qty}</small></div><b>${p.sell.toLocaleString()}</b></div>`).join(''); }
@@ -480,9 +525,16 @@
                 d.history.push({ date: new Date().toLocaleString(), type: 'Nasiya xarid', amount: total, items: [...CART] }); 
                 renderDebts();
             }
+            
+            if (type === 'klient' && tempClientData) {
+                let c = CLIENTS.find(x => x.name.toLowerCase() === tempClientData.name.toLowerCase());
+                if (!c) { c = { id: Date.now(), name: tempClientData.name, phone: tempClientData.phone, history: [] }; CLIENTS.push(c); }
+                c.history.push({ date: new Date().toLocaleString(), total: total, items: [...CART] });
+                renderClientsTab();
+            }
 
             SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [...CART], total, profit: p, type }); 
-            CART = []; tempDebtData = null; updateCartUI(); toggleCart(); saveToCloud(); renderStats(); renderKassa(); renderStock(); myAlert("Tasdiqlandi!"); 
+            CART = []; tempDebtData = null; tempClientData = null; updateCartUI(); toggleCart(); saveToCloud(); renderStats(); renderKassa(); renderStock(); myAlert("Tasdiqlandi!"); 
         }
 
         function handleImageCompress(e) {
@@ -522,41 +574,23 @@
         function acceptOrder(id) { myConfirm("Qabul?", () => { const o = ORDERS.find(x => x.id === id); if(!o) return; o.items.forEach(i => { const p = DB.find(x => x.id === i.id); if (p) p.qty -= i.qty; }); const pr = o.items.reduce((a, b) => a + (b.sell - (parseFloat(b.buy) || 0)) * b.qty, 0); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: o.items, total: o.total, profit: pr, type: 'naqd', note: `Online: ${o.client}` }); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove().then(() => { saveToCloud(); }); }); } 
         function rejectOrder(id) { myConfirm("O'chirasizmi?", () => { db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove(); }); }
         
+        // NASIYA
         function openDebtModal() { if (!CART.length) return myAlert("Savat bo'sh!"); document.getElementById('debt-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-debt-create').style.display = 'flex'; } 
         function confirmDebt() { const n = document.getElementById('debt-customer-name').value; const ph = document.getElementById('debt-customer-phone').value; if (!n) return myAlert("Ism kerak!"); tempDebtData = { name: n, phone: ph }; closeModal('modal-debt-create'); showReceiptModal('nasiya'); } 
         function renderDebts() { const s = document.getElementById('debt-search').value.toLowerCase(); document.getElementById('debt-list').innerHTML = DEBTS.filter(d => d.name.toLowerCase().includes(s) && d.balance !== 0).map(d => { let balText = d.balance > 0 ? `<b style="color:var(--red)">Qarz: ${d.balance.toLocaleString()}</b>` : `<b style="color:var(--green)">Haqdor: ${Math.abs(d.balance).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showDebtInfo(${d.id})"><div><b>${d.name}</b><br><small>${d.phone || ''}</small></div>${balText}</div>`; }).join(''); document.getElementById('total-debt-sum').innerText = DEBTS.filter(d => d.balance > 0).reduce((a, b) => a + b.balance, 0).toLocaleString() + " so'm"; } 
         let curDebtId = null; function showDebtInfo(id) { curDebtId = id; const d = DEBTS.find(x => x.id == id); document.getElementById('debt-info-name').innerText = d.name; const balEl = document.getElementById('debt-info-balance'); if (d.balance > 0) { balEl.innerText = "Qarz: " + d.balance.toLocaleString(); balEl.style.color = "var(--red)"; } else { balEl.innerText = "Haqdor: " + Math.abs(d.balance).toLocaleString(); balEl.style.color = "var(--green)"; } document.getElementById('debt-history-list').innerHTML = d.history.slice().reverse().map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0;"><div>${h.date}<br><small>${h.type}</small></div><b style="color:${h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)')}">${h.amount.toLocaleString()}</b></div>`).join(''); document.getElementById('modal-debt-info').style.display = 'flex'; } 
         function payDebt(type) { const a = parseFloat(document.getElementById('debt-pay-amount').value); if (!a || a <= 0) return myAlert("Xato summa!"); const d = DEBTS.find(x => x.id == curDebtId); if (type === 'kirim') { d.balance -= a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul olindi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: a, profit: 0, type: 'naqd', note: 'Qarz uzildi: ' + d.name }); } else { d.balance += a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul berildi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: -a, profit: 0, type: 'naqd', note: 'Haqdorga berildi: ' + d.name }); } document.getElementById('debt-pay-amount').value = ''; closeModal('modal-debt-info'); saveToCloud(); renderStats(); renderDebts(); myAlert("Saqlandi!"); }
 
+        // KLIENTLAR
+        function openClientCheckoutModal() { if (!CART.length) return myAlert("Savat bo'sh!"); document.getElementById('client-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-client-create').style.display = 'flex'; }
+        function confirmClientCheckout() { const n = document.getElementById('client-customer-name').value; const ph = document.getElementById('client-customer-phone').value; if (!n) return myAlert("Klient ismi kerak!"); tempClientData = { name: n, phone: ph }; closeModal('modal-client-create'); showReceiptModal('klient'); }
+        function renderClientsTab() { const s = document.getElementById('client-search').value.toLowerCase(); const container = document.getElementById('client-list-container'); if(!container) return; container.innerHTML = CLIENTS.filter(c => c.name.toLowerCase().includes(s)).map(c => { let t = c.history.reduce((a, b) => a + b.total, 0); return `<div class="card flex-between" onclick="showClientInfo(${c.id})"><div><b>${c.name}</b><br><small>${c.phone || ''}</small></div><b style="color:var(--blue)">${t.toLocaleString()} so'm</b></div>`; }).join(''); }
+        function showClientInfo(id) { const c = CLIENTS.find(x => x.id == id); document.getElementById('client-info-name').innerText = c.name; document.getElementById('client-history-list').innerHTML = c.history.slice().reverse().map(h => { let itemsStr = h.items.map(i => `${i.name} x${i.cartQty}`).join('<br>'); return `<div style="border-bottom:1px solid #ddd; padding:10px 0;"><div class="flex-between" style="margin-bottom:5px;"><small>${h.date}</small><b style="color:var(--green);">${h.total.toLocaleString()} so'm</b></div><div style="font-size:12px; color:#555;">${itemsStr}</div></div>`; }).join(''); document.getElementById('modal-client-info').style.display = 'flex'; }
+
         function renderStats() { if (!SESSION.sales) SESSION.sales = []; document.getElementById('stat-naqd').innerText = SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-plastik').innerText = SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-profit').innerText = SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; } function closeDay() { myConfirm("Yopasizmi?", () => { const r = { date: new Date().toLocaleString(), totalNaqd: SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0), totalPlastik: SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0), totalNasiya: SESSION.sales.filter(x => x.type == 'nasiya').reduce((a, b) => a + b.total, 0), profit: SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0), details: JSON.parse(JSON.stringify(SESSION.sales)), comment: document.getElementById('close-comment').value }; if (!ARCHIVES.daily) ARCHIVES.daily = []; ARCHIVES.daily.push(r); SESSION.sales = []; SESSION.date = new Date().toLocaleDateString(); saveToCloud(); renderStats(); myAlert("Kun yopildi!"); }); } function closePeriod(t) { myConfirm("Saqlaysizmi?", () => { const r = { date: new Date().toLocaleString(), type: t, summaryProfit: (ARCHIVES.daily || []).slice(-7).reduce((a, b) => a + b.profit, 0) }; if (!ARCHIVES[t == 'week' ? 'weekly' : 'monthly']) ARCHIVES[t == 'week' ? 'weekly' : 'monthly'] = []; ARCHIVES[t == 'week' ? 'weekly' : 'monthly'].push(r); saveToCloud(); myAlert("Saqlandi!"); }); } function renderArchive(t) { const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = 0; if (t === 'day') total = (i.totalNaqd || 0) + (i.totalPlastik || 0) + (i.totalNasiya || 0); let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } function buildAndShowTable(ti, tr, isT=false) { document.getElementById('archive-title').innerText = ti; if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; [...tr].reverse().forEach(s => { let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${s.total.toLocaleString()}</b><br><span class="tag-${s.type}">${s.type.toUpperCase()}</span></td>${b}</tr>`; }); h += `</tbody></table>`; document.getElementById('archive-detail-content').innerHTML = h; document.getElementById('modal-archive-detail').style.display = 'flex'; } function returnSale(id) { myConfirm("Vozvrat?", () => { const idx = SESSION.sales.findIndex(s => s.id === id); if (idx === -1) return; const s = SESSION.sales[idx]; if (s.items) s.items.forEach(i => { const d = DB.find(x => x.id === i.id); if (d) d.qty += i.cartQty; }); SESSION.sales.splice(idx, 1); saveToCloud(); refreshUI(); closeModal('modal-archive-detail'); myAlert("Vozvrat qilindi!"); }); }
 
-        // MIJOZ OYNASI (YANGI KAFEL DIZAYN)
         function renderClientCategories() { activeClientCat = null; document.getElementById('client-title').innerText = "KATEGORIYALAR"; document.getElementById('client-back-btn').style.display = 'none'; const c = [...new Set(DB.map(p => p.cat))]; document.getElementById('client-view-container').innerHTML = c.map(x => `<div class="cat-card" onclick="renderClientProducts('${x}')"><i class="fas fa-folder"></i><b>${x}</b></div>`).join(''); } 
-        
-        function renderClientProducts(cat) { 
-            activeClientCat = cat; 
-            document.getElementById('client-title').innerText = cat; 
-            document.getElementById('client-back-btn').style.display = 'block'; 
-            
-            document.getElementById('client-view-container').innerHTML = DB.filter(p => p.cat === cat).map(p => {
-                // Agar rasm bor bo'lsa uni ko'rsatadi, yo'q bo'lsa chiroyli ikonka qo'yadi
-                let imgHtml = p.img 
-                    ? `<img src="${p.img}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:8px; border: 1px solid #eee;">` 
-                    : `<div style="width:100%; height:130px; background:#f1f5f9; border-radius:10px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><i class="fas fa-image" style="font-size:30px;"></i></div>`;
-                
-                return `<div class="card" style="padding:10px; display:flex; flex-direction:column; justify-content:space-between; margin-bottom:0;">
-                    <div>
-                        ${imgHtml}
-                        <div style="line-height:1.2; margin-bottom:8px;">
-                            <b style="font-size:13px; display:block; margin-bottom:4px;">${p.name}</b>
-                            <span style="color:var(--blue); font-weight:900; font-size:14px;">${p.sell.toLocaleString()} so'm</span>
-                        </div>
-                    </div>
-                    ${p.qty > 0 ? `<button class="btn btn-green" style="margin:0; padding:8px; font-size:12px; border-radius:8px;" onclick="addToClientCart(${p.id})">Savatga <i class="fas fa-plus"></i></button>` : `<div style="color:var(--red); font-weight:bold; text-align:center; font-size:12px; padding:5px 0;">Tugagan</div>`}
-                </div>`;
-            }).join(''); 
-        } 
-
+        function renderClientProducts(cat) { activeClientCat = cat; document.getElementById('client-title').innerText = cat; document.getElementById('client-back-btn').style.display = 'block'; document.getElementById('client-view-container').innerHTML = DB.filter(p => p.cat === cat).map(p => { let imgHtml = p.img ? `<img src="${p.img}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:8px; border: 1px solid #eee;">` : `<div style="width:100%; height:130px; background:#f1f5f9; border-radius:10px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><i class="fas fa-image" style="font-size:30px;"></i></div>`; return `<div class="card" style="padding:10px; display:flex; flex-direction:column; justify-content:space-between; margin-bottom:0;"><div>${imgHtml}<div style="line-height:1.2; margin-bottom:8px;"><b style="font-size:13px; display:block; margin-bottom:4px;">${p.name}</b><span style="color:var(--blue); font-weight:900; font-size:14px;">${p.sell.toLocaleString()} so'm</span></div></div>${p.qty > 0 ? `<button class="btn btn-green" style="margin:0; padding:8px; font-size:12px; border-radius:8px;" onclick="addToClientCart(${p.id})">Savatga <i class="fas fa-plus"></i></button>` : `<div style="color:var(--red); font-weight:bold; text-align:center; font-size:12px; padding:5px 0;">Tugagan</div>`}</div>`; }).join(''); } 
         function addToClientCart(id) { const p = DB.find(x => x.id === id); const ex = clientCart.find(x => x.id === id); if (ex) ex.qty++; else clientCart.push({ ...p, qty: 1 }); updateClientCartUI(); } function updateClientCartUI() { const b = document.getElementById('client-cart-badge'); const q = clientCart.length; if (q > 0) { b.style.display = 'flex'; b.innerText = q; } else b.style.display = 'none'; let t = 0; document.getElementById('client-cart-items').innerHTML = clientCart.map((c, i) => { t += c.qty * c.sell; return `<div class="card flex-between" style="padding:10px; margin-bottom:5px;"><div><b>${c.name}</b><br>${c.sell}</div><div style="display:flex; align-items:center; gap:10px;"><button class="qty-btn" onclick="changeClientQty(${i},-1)">-</button><input type="number" class="qty-input" value="${c.qty}" onchange="updateClientQtyManual(${i},this.value)"><button class="qty-btn" onclick="changeClientQty(${i},1)">+</button></div></div>`; }).join(''); document.getElementById('client-cart-total').innerText = t.toLocaleString() + " so'm"; } function changeClientQty(i, d) { clientCart[i].qty += d; if (clientCart[i].qty <= 0) clientCart.splice(i, 1); updateClientCartUI(); } function updateClientQtyManual(i, v) { let q = parseFloat(v); if (q <= 0) clientCart.splice(i, 1); else clientCart[i].qty = q; updateClientCartUI(); } function toggleClientCart() { document.getElementById('client-cart-panel').classList.toggle('open'); } function getLocation() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(p => { clientLoc = { lat: p.coords.latitude, lng: p.coords.longitude }; document.getElementById('loc-status').style.display = 'block'; }, () => myAlert("Ruxsat bering!")); } else myAlert("Ishlamaydi"); }
         function submitOrderFinal() { const cName = document.getElementById('client-name').value; const cPhone = document.getElementById('client-phone').value; const totalSum = clientCart.reduce((a, b) => a + b.qty * b.sell, 0); if (!cName || !cPhone) return myAlert("Ism va Telefon kiriting!"); if (clientCart.length === 0) return myAlert("Savat bo'sh!"); const o = { id: Date.now(), client: cName, phone: cPhone, items: [...clientCart], total: totalSum, date: new Date().toLocaleString(), loc: clientLoc }; let destShop = shopParam ? shopParam : currentUserPhone; if(destShop) { db.ref("saas_dokonlar/" + destShop + "/ORDERS/ORD_" + o.id).set(o).then(() => { if (dokonSozlamalar.tg_bot_token && dokonSozlamalar.tg_chat_id) { let msg = `🛒 <b>YANGI ONLINE BUYURTMA!</b>\n\n👤 Mijoz: <b>${cName}</b>\n📞 Tel: +${cPhone}\n\n🛍 <b>Buyurtma ro'yxati:</b>\n`; clientCart.forEach(c => { msg += `▫️ ${c.name} x${c.qty} = ${(c.qty * c.sell).toLocaleString()} so'm\n`; }); msg += `\n💰 <b>JAMI SUMMA: ${totalSum.toLocaleString()} so'm</b>`; if (clientLoc) msg += `\n\n📍 <a href="https://maps.google.com/?q=$${clientLoc.lat},${clientLoc.lng}">Xaritada ko'rish</a>`; fetch(`https://api.telegram.org/bot${dokonSozlamalar.tg_bot_token}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: dokonSozlamalar.tg_chat_id, text: msg, parse_mode: 'HTML' }) }).catch(e => console.log(e)); } clientCart = []; clientLoc = null; document.getElementById('client-name').value = ''; document.getElementById('client-phone').value = ''; document.getElementById('loc-status').style.display = 'none'; updateClientCartUI(); closeModal('modal-client-check'); toggleClientCart(); myAlert("Buyurtma muvaffaqiyatli yuborildi! ✅\nSotuvchi tez orada bog'lanadi."); }); } }
         

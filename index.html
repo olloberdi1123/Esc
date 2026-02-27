@@ -116,7 +116,10 @@
                     </div>
                     <div class="grid-2">
                         <button class="btn btn-orange" onclick="openDebtModal()">NASIYA</button>
-                        <button class="btn btn-outline" style="border-color:var(--blue); color:var(--blue);" onclick="openClientCheckoutModal()">KLIENT <i class="fas fa-user-check"></i></button>
+                        <button class="btn btn-outline" style="border-color:var(--blue); color:var(--blue); position:relative;" onclick="openClientCheckoutModal()">
+                            KLIENT <i class="fas fa-user-check"></i>
+                            <i id="btn-klient-lock" class="fas fa-lock" style="display:none; position:absolute; top:5px; right:10px; color:var(--red); font-size:10px;"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -158,7 +161,7 @@
         </div>
 
         <div id="tab-klientlar" class="tab-content">
-            <h3>Doimiy Klientlar</h3>
+            <h3>Doimiy Klientlar <i class="fas fa-star" style="color:var(--orange);"></i></h3>
             <p style="font-size:12px; color:#666; margin-top:-10px;">Klientlarning xarid tarixini nazorat qilish.</p>
             <input type="text" id="client-search" placeholder="Qidirish..." oninput="renderClientsTab()">
             <div id="client-list-container"></div>
@@ -214,7 +217,7 @@
             <button class="nav-btn active" onclick="switchTab('kassa', this)"><i class="fas fa-cash-register"></i> Kassa</button>
             <button class="nav-btn" onclick="switchTab('ombor', this)"><i class="fas fa-box"></i> Ombor</button>
             <button class="nav-btn" onclick="switchTab('nasiya', this)"><i class="fas fa-user-clock"></i> Nasiya</button>
-            <button class="nav-btn" onclick="switchTab('klientlar', this)"><i class="fas fa-users"></i> Klient</button>
+            <button class="nav-btn" id="nav-btn-klientlar" onclick="switchTab('klientlar', this)"><i class="fas fa-users"></i> Klient</button>
             <button class="nav-btn" id="nav-btn-online" onclick="switchTab('online', this)"><i class="fas fa-globe"></i> Online <span id="nav-badge" class="badge">0</span></button>
             <button class="nav-btn" id="nav-btn-hisobot" onclick="switchTab('hisobot', this)"><i class="fas fa-chart-pie"></i> Hisobot</button>
             <button class="nav-btn" onclick="switchTab('sozlamalar', this)"><i class="fas fa-cog"></i> Sozlama</button>
@@ -277,7 +280,7 @@
 
     <div id="modal-client-create" class="modal">
         <div class="modal-box">
-            <h3>Klientga Sotish (Ro'yxat)</h3>
+            <h3>Klientga Sotish</h3>
             <p>Jami: <b id="client-modal-total">0</b></p>
             <input type="text" id="client-customer-name" placeholder="Klient Ismi">
             <input type="text" id="client-customer-phone" placeholder="Tel">
@@ -302,7 +305,7 @@
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
 
         let currentTarif = null, currentUserPhone = null;
-        let dokonSozlamalar = { dokon_nomi: "Do'kon", telefon: "", chek_footer: "Xaridingiz uchun rahmat!", obuna_tugash_sanasi: "", status: "faol" };
+        let dokonSozlamalar = { dokon_nomi: "Do'kon", telefon: "", chek_footer: "Xaridingiz uchun rahmat!", obuna_tugash_sanasi: "", status: "faol", klient_yoqilgan: false };
         let DB = [], CART = [], clientCart = [], DEBTS = [], CLIENTS = [], ORDERS = [];
         let SESSION = { sales: [], date: null }, ARCHIVES = { daily: [], weekly: [], monthly: [] };
         let html5QrCode = null, clientLoc = null, activeClientCat = null, confirmCallback = null, scanLock = false, tempType = null;
@@ -365,13 +368,13 @@
                     "sozlamalar/telefon": dokonSozlamalar.telefon || "", 
                     "sozlamalar/chek_footer": dokonSozlamalar.chek_footer || "", 
                     "sozlamalar/tg_bot_token": dokonSozlamalar.tg_bot_token || "", 
-                    "sozlamalar/tg_chat_id": dokonSozlamalar.tg_chat_id || "" 
+                    "sozlamalar/tg_chat_id": dokonSozlamalar.tg_chat_id || "",
+                    "sozlamalar/klient_yoqilgan": dokonSozlamalar.klient_yoqilgan || false
                 }).then(() => { localStorage.removeItem('saas_needs_sync'); }).catch(e => console.log("Saqlash xatosi")); 
             } 
         }
         function syncToCloud() { if (localStorage.getItem('saas_needs_sync') === 'true' && currentUserPhone) saveToCloud(); }
         
-        // OMBORNI BAZAGA UZATISH TUGMASI UCHUN
         function forceSyncDb() {
             if (!navigator.onLine) return myAlert("Internet aloqasi yo'q!");
             saveToCloud();
@@ -410,7 +413,7 @@
             db.ref("saas_dokonlar/" + phone).once("value", snap => {
                 if(snap.exists()) return myAlert("Bu raqam band.");
                 let exp = new Date(); exp.setDate(exp.getDate() + 30); 
-                const newStore = { sozlamalar: { dokon_nomi: name, telefon: phone, parol: pass, tarif: tarif, obuna_tugash_sanasi: exp.toISOString().split('T')[0], ro_yxatdan_sana: new Date().toLocaleDateString(), status: "faol", chek_footer: "Xaridingiz uchun rahmat!", tg_bot_token: "", tg_chat_id: "" }, DB: [], DEBTS: [], CLIENTS: [], ORDERS: {}, SESSION: { sales: [], date: new Date().toLocaleDateString() }, ARCHIVES: { daily: [], weekly: [], monthly: [] } };
+                const newStore = { sozlamalar: { dokon_nomi: name, telefon: phone, parol: pass, tarif: tarif, obuna_tugash_sanasi: exp.toISOString().split('T')[0], ro_yxatdan_sana: new Date().toLocaleDateString(), status: "faol", chek_footer: "Xaridingiz uchun rahmat!", tg_bot_token: "", tg_chat_id: "", klient_yoqilgan: false }, DB: [], DEBTS: [], CLIENTS: [], ORDERS: {}, SESSION: { sales: [], date: new Date().toLocaleDateString() }, ARCHIVES: { daily: [], weekly: [], monthly: [] } };
                 db.ref("saas_dokonlar/" + phone).set(newStore).then(() => { myAlert("Muvaffaqiyatli! 30 kun muddat berildi."); toggleAuthMode('login'); document.getElementById('login-phone').value = phone; document.getElementById('login-pass').value = pass; });
             });
         }
@@ -450,6 +453,15 @@
             
             const lockOverlay = document.getElementById('premium-lock-overlay');
             if(lockOverlay) lockOverlay.style.display = (currentTarif === 'premium') ? 'none' : 'flex';
+
+            // Klient modullari bloki (Add-on +10,000)
+            if (!dokonSozlamalar.klient_yoqilgan) {
+                document.getElementById('nav-btn-klientlar').classList.add('locked');
+                document.getElementById('btn-klient-lock').style.display = 'block';
+                if (document.getElementById('tab-klientlar').classList.contains('active-tab')) { switchTab('kassa', document.querySelector('.bottom-nav button')); }
+            } else {
+                document.getElementById('btn-klient-lock').style.display = 'none';
+            }
             
             if (currentTarif === 'mini') { 
                 document.getElementById('nav-btn-hisobot').classList.add('locked'); 
@@ -464,6 +476,8 @@
         function switchTab(t, b) {
             if (currentTarif === 'mini' && (t === 'hisobot' || t === 'online')) return myAlert("Bu tarif mavjud emas. Supportga yozing.");
             if (currentTarif === 'standart' && t === 'online') return myAlert("Bu tarif mavjud emas. Supportga yozing.");
+            if (t === 'klientlar' && !dokonSozlamalar.klient_yoqilgan) return myAlert("Bu bo'lim qulflangan! 🔒\nOylik to'lovga +10,000 so'm qo'shib faollashtirish uchun Adminga yozing.");
+
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab')); document.getElementById('tab-' + t).classList.add('active-tab'); document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active')); b.classList.add('active'); 
             if (t === 'hisobot') renderStats();
             if (t === 'klientlar') renderClientsTab();
@@ -561,7 +575,17 @@
             if (id) DB[DB.findIndex(x => x.id == id)] = i; else DB.push(i); 
             clearForm(); renderStock(); saveToCloud(); 
         } 
-        function renderStock() { const s = document.getElementById('stock-search').value.toLowerCase(); const b = DB.reduce((a, x) => a + x.qty * (parseFloat(x.buy) || 0), 0); const sl = DB.reduce((a, x) => a + x.qty * (parseFloat(x.sell) || 0), 0); document.getElementById('stock-summary-container').innerHTML = `<div class="warehouse-summary"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div><small>KELISH KAPI</small><h2>${b.toLocaleString()}</h2></div><div style="border-left:1px solid #fff3"><small>SOTUV KAPI</small><h2>${sl.toLocaleString()}</h2></div></div></div>`; document.getElementById('stock-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).sort((x, y) => { if (x.qty <= 0 && y.qty > 0) return -1; if (x.qty > 0 && y.qty <= 0) return 1; return y.id - x.id; }).map(p => { const isOut = p.qty <= 0; const style = isOut ? 'background: #fee2e2; border: 1px solid #ef4444;' : ''; const qtyText = isOut ? '<b style="color:#ef4444">TUGAGAN (0)</b>' : `${p.qty} ${p.unit}`; return `<div class="card flex-between" style="${style}"><div><span class="cat-tag">${p.cat}</span><div><b>${p.name}</b></div><small>${qtyText}</small></div><button class="btn btn-blue small" style="width:auto" onclick="editP(${p.id})">✎</button></div>`; }).join(''); document.getElementById('cat-list').innerHTML = [...new Set(DB.map(p => p.cat))].map(c => `<option value="${c}">`).join(''); } 
+        
+        function deleteP(id) {
+            myConfirm("Rostdan ham bu tovarni o'chirasizmi?", () => {
+                DB = DB.filter(x => x.id != id);
+                renderStock();
+                saveToCloud();
+                myAlert("Tovar o'chirildi!");
+            });
+        }
+
+        function renderStock() { const s = document.getElementById('stock-search').value.toLowerCase(); const b = DB.reduce((a, x) => a + x.qty * (parseFloat(x.buy) || 0), 0); const sl = DB.reduce((a, x) => a + x.qty * (parseFloat(x.sell) || 0), 0); document.getElementById('stock-summary-container').innerHTML = `<div class="warehouse-summary"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div><small>KELISH KAPI</small><h2>${b.toLocaleString()}</h2></div><div style="border-left:1px solid #fff3"><small>SOTUV KAPI</small><h2>${sl.toLocaleString()}</h2></div></div></div>`; document.getElementById('stock-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).sort((x, y) => { if (x.qty <= 0 && y.qty > 0) return -1; if (x.qty > 0 && y.qty <= 0) return 1; return y.id - x.id; }).map(p => { const isOut = p.qty <= 0; const style = isOut ? 'background: #fee2e2; border: 1px solid #ef4444;' : ''; const qtyText = isOut ? '<b style="color:#ef4444">TUGAGAN (0)</b>' : `${p.qty} ${p.unit}`; return `<div class="card flex-between" style="${style}"><div><span class="cat-tag">${p.cat}</span><div><b>${p.name}</b></div><small>${qtyText}</small></div><div style="display:flex; gap:5px;"><button class="btn btn-blue small" style="width:auto; margin:0;" onclick="editP(${p.id})">✎</button><button class="btn btn-red small" style="width:auto; margin:0;" onclick="deleteP(${p.id})"><i class="fas fa-trash"></i></button></div></div>`; }).join(''); document.getElementById('cat-list').innerHTML = [...new Set(DB.map(p => p.cat))].map(c => `<option value="${c}">`).join(''); } 
         function editP(id) { 
             const p = DB.find(x => x.id == id); 
             Object.keys(p).forEach(k => { if (document.getElementById('p-' + k)) document.getElementById('p-' + k).value = p[k]; }); 
@@ -581,8 +605,12 @@
         let curDebtId = null; function showDebtInfo(id) { curDebtId = id; const d = DEBTS.find(x => x.id == id); document.getElementById('debt-info-name').innerText = d.name; const balEl = document.getElementById('debt-info-balance'); if (d.balance > 0) { balEl.innerText = "Qarz: " + d.balance.toLocaleString(); balEl.style.color = "var(--red)"; } else { balEl.innerText = "Haqdor: " + Math.abs(d.balance).toLocaleString(); balEl.style.color = "var(--green)"; } document.getElementById('debt-history-list').innerHTML = d.history.slice().reverse().map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0;"><div>${h.date}<br><small>${h.type}</small></div><b style="color:${h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)')}">${h.amount.toLocaleString()}</b></div>`).join(''); document.getElementById('modal-debt-info').style.display = 'flex'; } 
         function payDebt(type) { const a = parseFloat(document.getElementById('debt-pay-amount').value); if (!a || a <= 0) return myAlert("Xato summa!"); const d = DEBTS.find(x => x.id == curDebtId); if (type === 'kirim') { d.balance -= a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul olindi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: a, profit: 0, type: 'naqd', note: 'Qarz uzildi: ' + d.name }); } else { d.balance += a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul berildi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: -a, profit: 0, type: 'naqd', note: 'Haqdorga berildi: ' + d.name }); } document.getElementById('debt-pay-amount').value = ''; closeModal('modal-debt-info'); saveToCloud(); renderStats(); renderDebts(); myAlert("Saqlandi!"); }
 
-        // KLIENTLAR
-        function openClientCheckoutModal() { if (!CART.length) return myAlert("Savat bo'sh!"); document.getElementById('client-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-client-create').style.display = 'flex'; }
+        // KLIENTLAR (Pullik modul +10,000)
+        function openClientCheckoutModal() { 
+            if (!dokonSozlamalar.klient_yoqilgan) return myAlert("Bu modul qulflangan! 🔒\nOylik to'lovga +10,000 so'm qo'shib faollashtirish uchun Adminga yozing.");
+            if (!CART.length) return myAlert("Savat bo'sh!"); 
+            document.getElementById('client-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-client-create').style.display = 'flex'; 
+        }
         function confirmClientCheckout() { const n = document.getElementById('client-customer-name').value; const ph = document.getElementById('client-customer-phone').value; if (!n) return myAlert("Klient ismi kerak!"); tempClientData = { name: n, phone: ph }; closeModal('modal-client-create'); showReceiptModal('klient'); }
         function renderClientsTab() { const s = document.getElementById('client-search').value.toLowerCase(); const container = document.getElementById('client-list-container'); if(!container) return; container.innerHTML = CLIENTS.filter(c => c.name.toLowerCase().includes(s)).map(c => { let t = c.history.reduce((a, b) => a + b.total, 0); return `<div class="card flex-between" onclick="showClientInfo(${c.id})"><div><b>${c.name}</b><br><small>${c.phone || ''}</small></div><b style="color:var(--blue)">${t.toLocaleString()} so'm</b></div>`; }).join(''); }
         function showClientInfo(id) { const c = CLIENTS.find(x => x.id == id); document.getElementById('client-info-name').innerText = c.name; document.getElementById('client-history-list').innerHTML = c.history.slice().reverse().map(h => { let itemsStr = h.items.map(i => `${i.name} x${i.cartQty}`).join('<br>'); return `<div style="border-bottom:1px solid #ddd; padding:10px 0;"><div class="flex-between" style="margin-bottom:5px;"><small>${h.date}</small><b style="color:var(--green);">${h.total.toLocaleString()} so'm</b></div><div style="font-size:12px; color:#555;">${itemsStr}</div></div>`; }).join(''); document.getElementById('modal-client-info').style.display = 'flex'; }

@@ -227,7 +227,7 @@
     <div id="screen-client" class="screen">
         <div class="top-bar flex-between"><b id="client-title">MARKET</b><button class="btn btn-outline small" id="client-back-btn" style="width:auto; display:none;" onclick="renderClientCategories()"><i class="fas fa-arrow-left"></i> Orqaga</button></div>
         <div id="client-view-container" class="grid-2" style="padding: 15px; padding-bottom: 80px;"></div>
-        <div class="float-btn" onclick="toggleClientCart()" style="bottom: 30px;"><i class="fas fa-shopping-bag"></i><span id="client-cart-badge">0</span></div>
+        <div id="client-float-btn" class="float-btn" onclick="toggleClientCart()" style="bottom: 30px;"><i class="fas fa-shopping-bag"></i><span id="client-cart-badge">0</span></div>
         <div id="client-cart-panel" class="cart-panel"><div class="cart-header"><h3 style="margin:0">Buyurtmangiz</h3><button class="btn btn-red small" style="width:auto; padding:5px 15px;" onclick="toggleClientCart()"><i class="fas fa-chevron-down"></i></button></div><div id="client-cart-items" class="cart-body" style="padding:15px;"></div><div style="padding: 15px; border-top: 1px solid #eee; background: white;"><div class="flex-between" style="margin-bottom:10px;"><b>Jami:</b><b id="client-cart-total">0 so'm</b></div><input type="text" id="client-name" placeholder="Ismingiz"><input type="tel" id="client-phone" placeholder="Telefon (901234567)" inputmode="numeric" pattern="[0-9]*"><button class="btn btn-loc" onclick="getLocation()">📍 Joylashuv</button><div id="loc-status" class="loc-status" style="display:none; color:green; margin-bottom:10px;">Joylashuv olindi ✅</div><button class="btn btn-green" onclick="submitOrderFinal()">BUYURTMA BERISH</button></div></div>
     </div>
 
@@ -335,6 +335,28 @@
                 if(snap.exists()) {
                     const data = snap.val(); DB = data.DB || []; dokonSozlamalar = data.sozlamalar || {};
                     document.getElementById('client-title').innerText = dokonSozlamalar.dokon_nomi || "MARKET";
+                    
+                    // --- YANGI QO'SHILGAN BLOKIROVKA KODI (MIJOZ UCHUN) ---
+                    const expDate = new Date(dokonSozlamalar.obuna_tugash_sanasi); 
+                    const today = new Date();
+                    const isBlok = (dokonSozlamalar.status === 'bloklangan' || today > expDate);
+                    const isNotPremium = (dokonSozlamalar.tarif !== 'premium');
+                    
+                    if (isBlok || isNotPremium) {
+                        document.getElementById('client-view-container').innerHTML = `
+                            <div style="text-align:center; width:100%; padding:50px 20px;">
+                                <i class="fas fa-store-slash" style="font-size:50px; color:var(--red); margin-bottom:15px;"></i>
+                                <h3 style="color:var(--dark);">Do'kon vaqtincha yopiq</h3>
+                                <p style="color:#666; font-size:14px;">Kechirasiz, ushbu do'kon hozirda onlayn buyurtmalarni qabul qilmayapti.</p>
+                            </div>`;
+                        document.getElementById('client-float-btn').style.display = 'none';
+                        document.getElementById('client-back-btn').style.display = 'none';
+                        return;
+                    } else {
+                        document.getElementById('client-float-btn').style.display = 'flex';
+                    }
+                    // ------------------------------------------------------
+
                     if(!activeClientCat) renderClientCategories(); else renderClientProducts(activeClientCat);
                 } else { document.getElementById('client-view-container').innerHTML = "<h3 style='text-align:center;width:100%;margin-top:50px;'>Do'kon topilmadi!</h3>"; }
             });
@@ -454,7 +476,6 @@
             const lockOverlay = document.getElementById('premium-lock-overlay');
             if(lockOverlay) lockOverlay.style.display = (currentTarif === 'premium') ? 'none' : 'flex';
 
-            // Klient modullari bloki (Add-on +10,000)
             if (!dokonSozlamalar.klient_yoqilgan) {
                 document.getElementById('nav-btn-klientlar').classList.add('locked');
                 document.getElementById('btn-klient-lock').style.display = 'block';
@@ -476,7 +497,7 @@
         function switchTab(t, b) {
             if (currentTarif === 'mini' && (t === 'hisobot' || t === 'online')) return myAlert("Bu tarif mavjud emas. Supportga yozing.");
             if (currentTarif === 'standart' && t === 'online') return myAlert("Bu tarif mavjud emas. Supportga yozing.");
-            if (t === 'klientlar' && !dokonSozlamalar.klient_yoqilgan) return myAlert("Bu bo'lim qulflangan! 🔒\nOylik to'lovga +10,000 so'm qo'shib faollashtirish uchun Adminga yozing.");
+            if (t === 'klientlar' && !dokonSozlamalar.klient_yoqilgan) return myAlert("Bu modul qulflangan! 🔒\nOylik to'lovga +10,000 so'm qo'shib faollashtirish uchun Adminga yozing.");
 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab')); document.getElementById('tab-' + t).classList.add('active-tab'); document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active')); b.classList.add('active'); 
             if (t === 'hisobot') renderStats();

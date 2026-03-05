@@ -9,7 +9,29 @@
     <title>KEENG MARKET SaaS</title>
     
     <script>
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Xato:', err)); }); }
+        // --- YANGI: MAJBURIY AVTO-YANGILASH TIZIMI (PWA) ---
+        if ('serviceWorker' in navigator) {
+            let refreshing = false;
+            // Agar yangi sw.js o'rnatilsa, o'zini-o'zi avtomat yangilaydi
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    // Dasturga har kirganda orqa fonda yangi versiya bor-yo'qligini tekshiradi
+                    reg.update();
+                    
+                    // Telefon ekrani yonganda ham tekshiradi
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') { reg.update(); }
+                    });
+                }).catch(err => console.log('SW Xato:', err));
+            });
+        }
     </script>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -56,7 +78,7 @@
         @media print {
             @page { margin: 0; size: auto; }
             html, body { margin: 0 !important; padding: 0 !important; background: white !important; overflow: visible !important; height: auto !important; position: static !important; }
-            .screen, .modal, .btn, .float-btn, .top-bar, .bottom-nav { display: none !important; }
+            .screen, .modal, .btn, .float-btn, .top-bar, .bottom-nav, #global-banner { display: none !important; }
             #printable-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding-left: 5mm; padding-right: 5mm; padding-bottom: 80px; box-sizing: border-box; }
             #printable-area * { visibility: visible !important; font-family: sans-serif; color: black !important; font-weight: 900; }
             .chk-header { text-align: center; font-size: 18px; text-transform: uppercase; margin-bottom: 5px; border-bottom: 3px solid black; padding-bottom: 5px; } .chk-sub { text-align: center; font-size: 12px; margin-bottom: 10px; font-weight: bold; } .chk-item { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; border-bottom: 1px dashed #000; padding-bottom: 2px; } .chk-total { font-size: 16px; margin-top: 15px; margin-bottom: 15px; border-top: 3px solid black; border-bottom: 3px solid black; padding: 8px 0; display: flex; justify-content: space-between; font-weight: 900; } .chk-footer { text-align: center; font-size: 11px; margin-top: 15px; line-height: 1.4; }
@@ -101,8 +123,14 @@
     </div>
 
     <div id="screen-admin" class="screen">
+        
+        <div id="global-banner" style="display:none; background:#ef4444; color:white; padding:10px 30px 10px 15px; text-align:center; font-size:13px; font-weight:bold; position:sticky; top:0; z-index:10000; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <span id="global-banner-text">Xabar matni</span>
+            <button onclick="document.getElementById('global-banner').style.display='none'" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:white; font-size:20px;">×</button>
+        </div>
+
         <div id="tab-kassa" class="tab-content active-tab">
-            <div class="top-bar"><div class="grid-scan" style="display: flex; gap: 8px;"><input type="text" id="search-inp" placeholder="Qidirish..." oninput="renderKassa()" style="margin:0;"><button class="btn btn-dark" style="width: auto; margin:0;" onclick="startScanner('kassa')"><i class="fas fa-barcode"></i></button></div></div>
+            <div class="top-bar" style="top: auto;"><div class="grid-scan" style="display: flex; gap: 8px;"><input type="text" id="search-inp" placeholder="Qidirish..." oninput="renderKassa()" style="margin:0;"><button class="btn btn-dark" style="width: auto; margin:0;" onclick="startScanner('kassa')"><i class="fas fa-barcode"></i></button></div></div>
             <div id="kassa-list" style="margin-top: 15px;"></div>
             <div class="float-btn" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span id="cart-badge">0</span></div>
             <div id="cart-panel" class="cart-panel">
@@ -144,11 +172,18 @@
                 <div style="display: flex; gap: 5px;"><input type="text" id="p-code" placeholder="Kodlar"><button class="btn btn-dark" style="width: auto; margin-bottom: 10px;" onclick="startScanner('ombor')"><i class="fas fa-barcode"></i></button></div>
                 <input type="text" id="p-cat" placeholder="Kategoriya" list="cat-list"><datalist id="cat-list"></datalist>
                 <input type="text" id="p-name" placeholder="Nomi">
-                <div class="grid-2"><select id="p-unit"><option value="dona">Dona</option><option value="kg">Kg</option></select><input type="number" id="p-qty" placeholder="Soni"></div>
+                
+                <div class="grid-2">
+                    <select id="p-unit"><option value="dona">Dona</option><option value="kg">Kg</option></select>
+                    <div style="display:flex; border:1px solid #cbd5e1; border-radius:12px; margin-bottom:10px; background:white; overflow:hidden;">
+                        <input type="number" id="p-qty" placeholder="Soni" style="border:none; margin:0; border-radius:0; width:100%;">
+                        <button class="btn btn-green" style="margin:0; border-radius:0; width:50px; font-size:18px;" onclick="addQtyFast()"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+                
                 <div class="grid-2"><input type="number" id="p-buy" placeholder="Kelish"><input type="number" id="p-sell" placeholder="Sotish"></div>
                 
                 <div class="grid-2"><button class="btn btn-blue" onclick="saveProduct()">SAQLASH</button><button class="btn btn-outline" onclick="clearForm()">TOZALASH</button></div>
-                
                 <button class="btn btn-dark" style="margin-top:10px; background:#475569;" onclick="forceSyncDb()"><i class="fas fa-cloud-upload-alt"></i> BAZAGA UZATISH</button>
             </div>
             <div id="stock-summary-container"></div><input type="text" id="stock-search" placeholder="Qidirish..." oninput="renderStock()" style="margin-bottom:10px;"><div id="stock-list"></div>
@@ -174,7 +209,17 @@
 
         <div id="tab-hisobot" class="tab-content">
             <div class="stat-card" style="background: var(--blue);"><small>KUNLIK SOF FOYDA</small><h1 id="stat-profit" style="margin: 5px 0;">0 so'm</h1></div>
-            <div class="grid-2"><div class="card center"><small>Naqd</small><h3 id="stat-naqd" style="margin:5px 0; color:var(--green);">0</h3></div><div class="card center"><small>Plastik</small><h3 id="stat-plastik" style="margin:5px 0; color:var(--blue);">0</h3></div></div>
+            
+            <div class="grid-2" style="margin-bottom:10px;">
+                <div class="card center"><small>Naqd</small><h3 id="stat-naqd" style="margin:5px 0; color:var(--green);">0</h3></div>
+                <div class="card center"><small>Plastik</small><h3 id="stat-plastik" style="margin:5px 0; color:var(--blue);">0</h3></div>
+            </div>
+            <div class="grid-2" style="margin-bottom:10px;">
+                <div class="card center"><small>Nasiya</small><h3 id="stat-nasiya" style="margin:5px 0; color:var(--orange);">0</h3></div>
+                <div class="card center"><small>Klient</small><h3 id="stat-klient" style="margin:5px 0; color:var(--dark);">0</h3></div>
+            </div>
+            <div class="card center" style="background:#f1f5f9; border: 1px dashed #ccc;"><small>UMUMIY SAVDO JAMI</small><h2 id="stat-total" style="margin:5px 0; color:var(--dark);">0 so'm</h2></div>
+            
             <button class="btn btn-outline" onclick="showTodayDetails()">BUGUNGI SAVDOLAR</button>
             <div class="card"><h3>Kunni Yopish</h3><input type="text" id="close-comment" placeholder="Izoh"><button class="btn btn-red" onclick="closeDay()">KUNNI YOPISH</button></div>
             <div class="grid-2"><button class="btn btn-orange" onclick="closePeriod('week')">HAFTALIK</button><button class="btn btn-dark" onclick="closePeriod('month')">OYLIK</button></div>
@@ -225,7 +270,13 @@
     </div>
 
     <div id="screen-client" class="screen">
-        <div class="top-bar flex-between"><b id="client-title">MARKET</b><button class="btn btn-outline small" id="client-back-btn" style="width:auto; display:none;" onclick="renderClientCategories()"><i class="fas fa-arrow-left"></i> Orqaga</button></div>
+        <div class="top-bar flex-between">
+            <b id="client-title">MARKET</b>
+            <div style="display:flex; gap:5px;">
+                <button class="btn btn-outline small" style="width:auto; margin:0; padding:5px 10px; border-color:var(--orange); color:var(--orange);" onclick="openMyDebtModal()"><i class="fas fa-wallet"></i> Qarzim</button>
+                <button class="btn btn-outline small" id="client-back-btn" style="width:auto; display:none; margin:0; padding:5px 10px;" onclick="renderClientCategories()"><i class="fas fa-arrow-left"></i></button>
+            </div>
+        </div>
         <div id="client-view-container" class="grid-2" style="padding: 15px; padding-bottom: 80px;"></div>
         <div id="client-float-btn" class="float-btn" onclick="toggleClientCart()" style="bottom: 30px;"><i class="fas fa-shopping-bag"></i><span id="client-cart-badge">0</span></div>
         <div id="client-cart-panel" class="cart-panel"><div class="cart-header"><h3 style="margin:0">Buyurtmangiz</h3><button class="btn btn-red small" style="width:auto; padding:5px 15px;" onclick="toggleClientCart()"><i class="fas fa-chevron-down"></i></button></div><div id="client-cart-items" class="cart-body" style="padding:15px;"></div><div style="padding: 15px; border-top: 1px solid #eee; background: white;"><div class="flex-between" style="margin-bottom:10px;"><b>Jami:</b><b id="client-cart-total">0 so'm</b></div><input type="text" id="client-name" placeholder="Ismingiz"><input type="tel" id="client-phone" placeholder="Telefon (901234567)" inputmode="numeric" pattern="[0-9]*"><button class="btn btn-loc" onclick="getLocation()">📍 Joylashuv</button><div id="loc-status" class="loc-status" style="display:none; color:green; margin-bottom:10px;">Joylashuv olindi ✅</div><button class="btn btn-green" onclick="submitOrderFinal()">BUYURTMA BERISH</button></div></div>
@@ -270,7 +321,13 @@
     
     <div id="modal-debt-info" class="modal">
         <div class="modal-box" style="height:80vh;">
-            <div class="flex-between"><h3 id="debt-info-name">Mijoz</h3><button onclick="closeModal('modal-debt-info')" style="background:none; border:none; font-size:20px;">✕</button></div>
+            <div class="flex-between">
+                <h3 id="debt-info-name" style="margin:0;">Mijoz</h3>
+                <div>
+                    <button onclick="shareDebt()" style="background:none; border:none; font-size:20px; color:var(--blue); margin-right:15px;"><i class="fas fa-share-nodes"></i></button>
+                    <button onclick="closeModal('modal-debt-info')" style="background:none; border:none; font-size:20px;">✕</button>
+                </div>
+            </div>
             <h2 id="debt-info-balance" style="text-align:center; margin-top:5px;">0</h2>
             <div style="background:#f1f5f9; padding:10px; border-radius:10px; flex-grow:1; overflow-y:auto; margin-bottom:10px;"><div id="debt-history-list"></div></div>
             <input type="number" id="debt-pay-amount" placeholder="Summani kiriting">
@@ -294,6 +351,17 @@
             <div class="flex-between"><h3 id="client-info-name">Klient</h3><button onclick="closeModal('modal-client-info')" style="background:none; border:none; font-size:20px;">✕</button></div>
             <div style="background:#f1f5f9; padding:10px; border-radius:10px; flex-grow:1; overflow-y:auto; margin-bottom:10px;"><div id="client-history-list"></div></div>
             <button class="btn btn-red" onclick="closeModal('modal-client-info')">YOPISH</button>
+        </div>
+    </div>
+
+    <div id="modal-client-debt" class="modal">
+        <div class="modal-box" style="text-align:center;">
+            <h3>Qarzni tekshirish</h3>
+            <p style="font-size:13px; color:#666;">Do'konga kiritgan raqamingizni yozing:</p>
+            <input type="tel" id="client-debt-check-phone" placeholder="Masalan: 901234567" style="text-align:center;">
+            <button class="btn btn-blue" onclick="fetchMyDebt()">TEKSHIRISH</button>
+            <button class="btn btn-outline" onclick="closeModal('modal-client-debt')">YOPISH</button>
+            <div id="client-debt-result" style="margin-top:15px; font-weight:bold;"></div>
         </div>
     </div>
     
@@ -336,7 +404,6 @@
                     const data = snap.val(); DB = data.DB || []; dokonSozlamalar = data.sozlamalar || {};
                     document.getElementById('client-title').innerText = dokonSozlamalar.dokon_nomi || "MARKET";
                     
-                    // --- YANGI QO'SHILGAN BLOKIROVKA KODI (MIJOZ UCHUN) ---
                     const expDate = new Date(dokonSozlamalar.obuna_tugash_sanasi); 
                     const today = new Date();
                     const isBlok = (dokonSozlamalar.status === 'bloklangan' || today > expDate);
@@ -355,10 +422,35 @@
                     } else {
                         document.getElementById('client-float-btn').style.display = 'flex';
                     }
-                    // ------------------------------------------------------
 
                     if(!activeClientCat) renderClientCategories(); else renderClientProducts(activeClientCat);
                 } else { document.getElementById('client-view-container').innerHTML = "<h3 style='text-align:center;width:100%;margin-top:50px;'>Do'kon topilmadi!</h3>"; }
+            });
+        }
+
+        function openMyDebtModal() {
+            document.getElementById('client-debt-result').innerHTML = '';
+            document.getElementById('client-debt-check-phone').value = '';
+            document.getElementById('modal-client-debt').style.display = 'flex';
+        }
+        
+        function fetchMyDebt() {
+            const phone = document.getElementById('client-debt-check-phone').value.trim();
+            if(!phone) return myAlert("Raqamni kiriting!");
+            let destShop = shopParam ? shopParam : currentUserPhone;
+            if(!destShop) return;
+            
+            db.ref("saas_dokonlar/" + destShop + "/DEBTS").once("value", snap => {
+                let resBox = document.getElementById('client-debt-result');
+                if(snap.exists()) {
+                    let debts = snap.val();
+                    let myDebt = debts.find(d => d.phone && d.phone.includes(phone));
+                    if(myDebt) {
+                        if(myDebt.balance > 0) resBox.innerHTML = `<span style="color:var(--red); font-size:18px;">Sizning qarzingiz:<br>${myDebt.balance.toLocaleString()} so'm</span>`;
+                        else if(myDebt.balance < 0) resBox.innerHTML = `<span style="color:var(--green); font-size:18px;">Sizning haqingiz:<br>${Math.abs(myDebt.balance).toLocaleString()} so'm</span>`;
+                        else resBox.innerHTML = `<span style="color:var(--green);">Sizda qarz yo'q ✅</span>`;
+                    } else resBox.innerHTML = "Qarz topilmadi.";
+                } else resBox.innerHTML = "Qarz topilmadi.";
             });
         }
 
@@ -404,6 +496,18 @@
         }
 
         function startListeningTenant(phone) {
+            db.ref("saas_global/banner").on("value", snap => {
+                if(snap.exists()) {
+                    const b = snap.val();
+                    if(b.active && b.text) {
+                        document.getElementById('global-banner-text').innerText = b.text;
+                        document.getElementById('global-banner').style.display = 'block';
+                    } else {
+                        document.getElementById('global-banner').style.display = 'none';
+                    }
+                }
+            });
+
             db.ref("saas_dokonlar/" + phone).on("value", snap => {
                 if (snap.exists()) {
                     const d = snap.val(); 
@@ -588,6 +692,14 @@
             }
         }
 
+        function addQtyFast() {
+            let cur = parseFloat(document.getElementById('p-qty').value) || 0;
+            let add = prompt(`Mavjud qoldiq: ${cur}\nQo'shiladigan miqdorni kiriting:`, "");
+            if(add && !isNaN(add)) {
+                document.getElementById('p-qty').value = cur + parseFloat(add);
+            }
+        }
+
         function saveProduct() { 
             const n = document.getElementById('p-name').value; const s = parseFloat(document.getElementById('p-sell').value); const id = document.getElementById('p-id').value; 
             if (!n || !s) return myAlert("Xato!"); 
@@ -619,14 +731,24 @@
         function acceptOrder(id) { myConfirm("Qabul?", () => { const o = ORDERS.find(x => x.id === id); if(!o) return; o.items.forEach(i => { const p = DB.find(x => x.id === i.id); if (p) p.qty -= i.qty; }); const pr = o.items.reduce((a, b) => a + (b.sell - (parseFloat(b.buy) || 0)) * b.qty, 0); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: o.items, total: o.total, profit: pr, type: 'naqd', note: `Online: ${o.client}` }); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove().then(() => { saveToCloud(); }); }); } 
         function rejectOrder(id) { myConfirm("O'chirasizmi?", () => { db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove(); }); }
         
-        // NASIYA
         function openDebtModal() { if (!CART.length) return myAlert("Savat bo'sh!"); document.getElementById('debt-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-debt-create').style.display = 'flex'; } 
         function confirmDebt() { const n = document.getElementById('debt-customer-name').value; const ph = document.getElementById('debt-customer-phone').value; if (!n) return myAlert("Ism kerak!"); tempDebtData = { name: n, phone: ph }; closeModal('modal-debt-create'); showReceiptModal('nasiya'); } 
         function renderDebts() { const s = document.getElementById('debt-search').value.toLowerCase(); document.getElementById('debt-list').innerHTML = DEBTS.filter(d => d.name.toLowerCase().includes(s) && d.balance !== 0).map(d => { let balText = d.balance > 0 ? `<b style="color:var(--red)">Qarz: ${d.balance.toLocaleString()}</b>` : `<b style="color:var(--green)">Haqdor: ${Math.abs(d.balance).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showDebtInfo(${d.id})"><div><b>${d.name}</b><br><small>${d.phone || ''}</small></div>${balText}</div>`; }).join(''); document.getElementById('total-debt-sum').innerText = DEBTS.filter(d => d.balance > 0).reduce((a, b) => a + b.balance, 0).toLocaleString() + " so'm"; } 
-        let curDebtId = null; function showDebtInfo(id) { curDebtId = id; const d = DEBTS.find(x => x.id == id); document.getElementById('debt-info-name').innerText = d.name; const balEl = document.getElementById('debt-info-balance'); if (d.balance > 0) { balEl.innerText = "Qarz: " + d.balance.toLocaleString(); balEl.style.color = "var(--red)"; } else { balEl.innerText = "Haqdor: " + Math.abs(d.balance).toLocaleString(); balEl.style.color = "var(--green)"; } document.getElementById('debt-history-list').innerHTML = d.history.slice().reverse().map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0;"><div>${h.date}<br><small>${h.type}</small></div><b style="color:${h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)')}">${h.amount.toLocaleString()}</b></div>`).join(''); document.getElementById('modal-debt-info').style.display = 'flex'; } 
+        let curDebtId = null; 
+        function showDebtInfo(id) { curDebtId = id; const d = DEBTS.find(x => x.id == id); document.getElementById('debt-info-name').innerText = d.name; const balEl = document.getElementById('debt-info-balance'); if (d.balance > 0) { balEl.innerText = "Qarz: " + d.balance.toLocaleString(); balEl.style.color = "var(--red)"; } else { balEl.innerText = "Haqdor: " + Math.abs(d.balance).toLocaleString(); balEl.style.color = "var(--green)"; } document.getElementById('debt-history-list').innerHTML = d.history.slice().reverse().map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0;"><div>${h.date}<br><small>${h.type}</small></div><b style="color:${h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)')}">${h.amount.toLocaleString()}</b></div>`).join(''); document.getElementById('modal-debt-info').style.display = 'flex'; } 
+        
+        function shareDebt() {
+            const d = DEBTS.find(x => x.id == curDebtId); if(!d) return;
+            let msg = `Sizning "${dokonSozlamalar.dokon_nomi || 'Do\'kon'}"dagi holatingiz:\n\n👤 Mijoz: ${d.name}\n💰 Qoldiq: ${d.balance > 0 ? "Sizdan qarz: " + d.balance.toLocaleString() : "Do'kondan haqingiz: " + Math.abs(d.balance).toLocaleString()} so'm\n\nOxirgi operatsiya: ${d.history.length > 0 ? d.history[d.history.length-1].date : '-'}\n\nHavola orqali batafsil tekshiring: ${window.location.href.split('?')[0]}?shop=${currentUserPhone}`;
+            if(navigator.share) {
+                navigator.share({title: 'Qarz ma\'lumoti', text: msg}).catch(e=>{});
+            } else {
+                myAlert("Ulashish imkoni yo'q (brauzer qo'llab-quvvatlamaydi)");
+            }
+        }
+
         function payDebt(type) { const a = parseFloat(document.getElementById('debt-pay-amount').value); if (!a || a <= 0) return myAlert("Xato summa!"); const d = DEBTS.find(x => x.id == curDebtId); if (type === 'kirim') { d.balance -= a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul olindi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: a, profit: 0, type: 'naqd', note: 'Qarz uzildi: ' + d.name }); } else { d.balance += a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul berildi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: -a, profit: 0, type: 'naqd', note: 'Haqdorga berildi: ' + d.name }); } document.getElementById('debt-pay-amount').value = ''; closeModal('modal-debt-info'); saveToCloud(); renderStats(); renderDebts(); myAlert("Saqlandi!"); }
 
-        // KLIENTLAR (Pullik modul +10,000)
         function openClientCheckoutModal() { 
             if (!dokonSozlamalar.klient_yoqilgan) return myAlert("Bu modul qulflangan! 🔒\nOylik to'lovga +10,000 so'm qo'shib faollashtirish uchun Adminga yozing.");
             if (!CART.length) return myAlert("Savat bo'sh!"); 
@@ -636,7 +758,19 @@
         function renderClientsTab() { const s = document.getElementById('client-search').value.toLowerCase(); const container = document.getElementById('client-list-container'); if(!container) return; container.innerHTML = CLIENTS.filter(c => c.name.toLowerCase().includes(s)).map(c => { let t = c.history.reduce((a, b) => a + b.total, 0); return `<div class="card flex-between" onclick="showClientInfo(${c.id})"><div><b>${c.name}</b><br><small>${c.phone || ''}</small></div><b style="color:var(--blue)">${t.toLocaleString()} so'm</b></div>`; }).join(''); }
         function showClientInfo(id) { const c = CLIENTS.find(x => x.id == id); document.getElementById('client-info-name').innerText = c.name; document.getElementById('client-history-list').innerHTML = c.history.slice().reverse().map(h => { let itemsStr = h.items.map(i => `${i.name} x${i.cartQty}`).join('<br>'); return `<div style="border-bottom:1px solid #ddd; padding:10px 0;"><div class="flex-between" style="margin-bottom:5px;"><small>${h.date}</small><b style="color:var(--green);">${h.total.toLocaleString()} so'm</b></div><div style="font-size:12px; color:#555;">${itemsStr}</div></div>`; }).join(''); document.getElementById('modal-client-info').style.display = 'flex'; }
 
-        function renderStats() { if (!SESSION.sales) SESSION.sales = []; document.getElementById('stat-naqd').innerText = SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-plastik').innerText = SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-profit').innerText = SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; } function closeDay() { myConfirm("Yopasizmi?", () => { const r = { date: new Date().toLocaleString(), totalNaqd: SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0), totalPlastik: SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0), totalNasiya: SESSION.sales.filter(x => x.type == 'nasiya').reduce((a, b) => a + b.total, 0), profit: SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0), details: JSON.parse(JSON.stringify(SESSION.sales)), comment: document.getElementById('close-comment').value }; if (!ARCHIVES.daily) ARCHIVES.daily = []; ARCHIVES.daily.push(r); SESSION.sales = []; SESSION.date = new Date().toLocaleDateString(); saveToCloud(); renderStats(); myAlert("Kun yopildi!"); }); } function closePeriod(t) { myConfirm("Saqlaysizmi?", () => { const r = { date: new Date().toLocaleString(), type: t, summaryProfit: (ARCHIVES.daily || []).slice(-7).reduce((a, b) => a + b.profit, 0) }; if (!ARCHIVES[t == 'week' ? 'weekly' : 'monthly']) ARCHIVES[t == 'week' ? 'weekly' : 'monthly'] = []; ARCHIVES[t == 'week' ? 'weekly' : 'monthly'].push(r); saveToCloud(); myAlert("Saqlandi!"); }); } function renderArchive(t) { const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = 0; if (t === 'day') total = (i.totalNaqd || 0) + (i.totalPlastik || 0) + (i.totalNasiya || 0); let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } function buildAndShowTable(ti, tr, isT=false) { document.getElementById('archive-title').innerText = ti; if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; [...tr].reverse().forEach(s => { let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${s.total.toLocaleString()}</b><br><span class="tag-${s.type}">${s.type.toUpperCase()}</span></td>${b}</tr>`; }); h += `</tbody></table>`; document.getElementById('archive-detail-content').innerHTML = h; document.getElementById('modal-archive-detail').style.display = 'flex'; } function returnSale(id) { myConfirm("Vozvrat?", () => { const idx = SESSION.sales.findIndex(s => s.id === id); if (idx === -1) return; const s = SESSION.sales[idx]; if (s.items) s.items.forEach(i => { const d = DB.find(x => x.id === i.id); if (d) d.qty += i.cartQty; }); SESSION.sales.splice(idx, 1); saveToCloud(); refreshUI(); closeModal('modal-archive-detail'); myAlert("Vozvrat qilindi!"); }); }
+        function renderStats() { 
+            if (!SESSION.sales) SESSION.sales = []; 
+            document.getElementById('stat-naqd').innerText = SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0).toLocaleString(); 
+            document.getElementById('stat-plastik').innerText = SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0).toLocaleString(); 
+            document.getElementById('stat-nasiya').innerText = SESSION.sales.filter(x => x.type == 'nasiya').reduce((a, b) => a + b.total, 0).toLocaleString(); 
+            document.getElementById('stat-klient').innerText = SESSION.sales.filter(x => x.type == 'klient').reduce((a, b) => a + b.total, 0).toLocaleString(); 
+            
+            let umJami = SESSION.sales.reduce((a, b) => a + b.total, 0);
+            document.getElementById('stat-total').innerText = umJami.toLocaleString() + " so'm";
+            document.getElementById('stat-profit').innerText = SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; 
+        } 
+        
+        function closeDay() { myConfirm("Yopasizmi?", () => { const r = { date: new Date().toLocaleString(), totalNaqd: SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0), totalPlastik: SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0), totalNasiya: SESSION.sales.filter(x => x.type == 'nasiya').reduce((a, b) => a + b.total, 0), totalKlient: SESSION.sales.filter(x => x.type == 'klient').reduce((a, b) => a + b.total, 0), totalSum: SESSION.sales.reduce((a, b) => a + b.total, 0), profit: SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0), details: JSON.parse(JSON.stringify(SESSION.sales)), comment: document.getElementById('close-comment').value }; if (!ARCHIVES.daily) ARCHIVES.daily = []; ARCHIVES.daily.push(r); SESSION.sales = []; SESSION.date = new Date().toLocaleDateString(); saveToCloud(); renderStats(); myAlert("Kun yopildi!"); }); } function closePeriod(t) { myConfirm("Saqlaysizmi?", () => { const r = { date: new Date().toLocaleString(), type: t, summaryProfit: (ARCHIVES.daily || []).slice(-7).reduce((a, b) => a + b.profit, 0) }; if (!ARCHIVES[t == 'week' ? 'weekly' : 'monthly']) ARCHIVES[t == 'week' ? 'weekly' : 'monthly'] = []; ARCHIVES[t == 'week' ? 'weekly' : 'monthly'].push(r); saveToCloud(); myAlert("Saqlandi!"); }); } function renderArchive(t) { const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = t === 'day' ? (i.totalSum || ((i.totalNaqd||0) + (i.totalPlastik||0) + (i.totalNasiya||0) + (i.totalKlient||0))) : 0; let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } function buildAndShowTable(ti, tr, isT=false) { document.getElementById('archive-title').innerText = ti; if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; [...tr].reverse().forEach(s => { let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${s.total.toLocaleString()}</b><br><span class="tag-${s.type}">${s.type.toUpperCase()}</span></td>${b}</tr>`; }); h += `</tbody></table>`; document.getElementById('archive-detail-content').innerHTML = h; document.getElementById('modal-archive-detail').style.display = 'flex'; } function returnSale(id) { myConfirm("Vozvrat?", () => { const idx = SESSION.sales.findIndex(s => s.id === id); if (idx === -1) return; const s = SESSION.sales[idx]; if (s.items) s.items.forEach(i => { const d = DB.find(x => x.id === i.id); if (d) d.qty += i.cartQty; }); SESSION.sales.splice(idx, 1); saveToCloud(); refreshUI(); closeModal('modal-archive-detail'); myAlert("Vozvrat qilindi!"); }); }
 
         function renderClientCategories() { activeClientCat = null; document.getElementById('client-title').innerText = "KATEGORIYALAR"; document.getElementById('client-back-btn').style.display = 'none'; const c = [...new Set(DB.map(p => p.cat))]; document.getElementById('client-view-container').innerHTML = c.map(x => `<div class="cat-card" onclick="renderClientProducts('${x}')"><i class="fas fa-folder"></i><b>${x}</b></div>`).join(''); } 
         function renderClientProducts(cat) { activeClientCat = cat; document.getElementById('client-title').innerText = cat; document.getElementById('client-back-btn').style.display = 'block'; document.getElementById('client-view-container').innerHTML = DB.filter(p => p.cat === cat).map(p => { let imgHtml = p.img ? `<img src="${p.img}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:8px; border: 1px solid #eee;">` : `<div style="width:100%; height:130px; background:#f1f5f9; border-radius:10px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><i class="fas fa-image" style="font-size:30px;"></i></div>`; return `<div class="card" style="padding:10px; display:flex; flex-direction:column; justify-content:space-between; margin-bottom:0;"><div>${imgHtml}<div style="line-height:1.2; margin-bottom:8px;"><b style="font-size:13px; display:block; margin-bottom:4px;">${p.name}</b><span style="color:var(--blue); font-weight:900; font-size:14px;">${p.sell.toLocaleString()} so'm</span></div></div>${p.qty > 0 ? `<button class="btn btn-green" style="margin:0; padding:8px; font-size:12px; border-radius:8px;" onclick="addToClientCart(${p.id})">Savatga <i class="fas fa-plus"></i></button>` : `<div style="color:var(--red); font-weight:bold; text-align:center; font-size:12px; padding:5px 0;">Tugagan</div>`}</div>`; }).join(''); } 

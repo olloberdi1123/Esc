@@ -9,10 +9,8 @@
     <title>KEENG MARKET SaaS</title>
     
     <script>
-        // --- YANGI: MAJBURIY AVTO-YANGILASH TIZIMI (PWA) ---
         if ('serviceWorker' in navigator) {
             let refreshing = false;
-            // Agar yangi sw.js o'rnatilsa, o'zini-o'zi avtomat yangilaydi
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (!refreshing) {
                     refreshing = true;
@@ -22,10 +20,7 @@
 
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').then(reg => {
-                    // Dasturga har kirganda orqa fonda yangi versiya bor-yo'qligini tekshiradi
                     reg.update();
-                    
-                    // Telefon ekrani yonganda ham tekshiradi
                     document.addEventListener('visibilitychange', () => {
                         if (document.visibilityState === 'visible') { reg.update(); }
                     });
@@ -355,13 +350,14 @@
     </div>
 
     <div id="modal-client-debt" class="modal">
-        <div class="modal-box" style="text-align:center;">
+        <div class="modal-box" style="text-align:center; max-height:80vh;">
             <h3>Qarzni tekshirish</h3>
             <p style="font-size:13px; color:#666;">Do'konga kiritgan raqamingizni yozing:</p>
             <input type="tel" id="client-debt-check-phone" placeholder="Masalan: 901234567" style="text-align:center;">
             <button class="btn btn-blue" onclick="fetchMyDebt()">TEKSHIRISH</button>
             <button class="btn btn-outline" onclick="closeModal('modal-client-debt')">YOPISH</button>
-            <div id="client-debt-result" style="margin-top:15px; font-weight:bold;"></div>
+            
+            <div id="client-debt-result" style="margin-top:15px; font-weight:bold; overflow-y:auto; max-height:40vh; text-align:left;"></div>
         </div>
     </div>
     
@@ -446,11 +442,40 @@
                     let debts = snap.val();
                     let myDebt = debts.find(d => d.phone && d.phone.includes(phone));
                     if(myDebt) {
-                        if(myDebt.balance > 0) resBox.innerHTML = `<span style="color:var(--red); font-size:18px;">Sizning qarzingiz:<br>${myDebt.balance.toLocaleString()} so'm</span>`;
-                        else if(myDebt.balance < 0) resBox.innerHTML = `<span style="color:var(--green); font-size:18px;">Sizning haqingiz:<br>${Math.abs(myDebt.balance).toLocaleString()} so'm</span>`;
-                        else resBox.innerHTML = `<span style="color:var(--green);">Sizda qarz yo'q ✅</span>`;
-                    } else resBox.innerHTML = "Qarz topilmadi.";
-                } else resBox.innerHTML = "Qarz topilmadi.";
+                        let html = '';
+                        // Umumiy qarz/haq qismi
+                        if(myDebt.balance > 0) html += `<div style="text-align:center; margin-bottom:15px;"><span style="color:var(--red); font-size:18px;">Sizning qarzingiz:<br>${myDebt.balance.toLocaleString()} so'm</span></div>`;
+                        else if(myDebt.balance < 0) html += `<div style="text-align:center; margin-bottom:15px;"><span style="color:var(--green); font-size:18px;">Sizning haqingiz:<br>${Math.abs(myDebt.balance).toLocaleString()} so'm</span></div>`;
+                        else html += `<div style="text-align:center; margin-bottom:15px;"><span style="color:var(--green);">Sizda qarz yo'q ✅</span></div>`;
+
+                        // Arxivi (Tarixi) qismi
+                        if (myDebt.history && myDebt.history.length > 0) {
+                            html += `<div style="background:#f1f5f9; padding:10px; border-radius:10px;">`;
+                            html += `<h4 style="margin-top:0; margin-bottom:10px; color:var(--dark); text-align:center;">Xaridlar tarixi:</h4>`;
+                            
+                            myDebt.history.slice().reverse().forEach(h => {
+                                let color = h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)');
+                                let itemsHtml = '';
+                                if (h.items && h.items.length > 0) {
+                                    itemsHtml = `<div style="font-size:11px; color:#555; margin-top:3px; font-weight:normal;">` + h.items.map(i => `${i.name} x${i.cartQty}`).join(', ') + `</div>`;
+                                }
+                                html += `
+                                <div style="border-bottom:1px solid #ddd; padding:8px 0;">
+                                    <div class="flex-between">
+                                        <small style="color:#666">${h.date}<br><b style="color:#333">${h.type}</b></small>
+                                        <b style="color:${color}">${h.amount.toLocaleString()}</b>
+                                    </div>
+                                    ${itemsHtml}
+                                </div>`;
+                            });
+                            html += `</div>`;
+                        } else {
+                            html += `<div style="color:#666; font-size:13px; text-align:center;">Tarix mavjud emas.</div>`;
+                        }
+                        
+                        resBox.innerHTML = html;
+                    } else resBox.innerHTML = "<div style='text-align:center;'>Qarz topilmadi.</div>";
+                } else resBox.innerHTML = "<div style='text-align:center;'>Qarz topilmadi.</div>";
             });
         }
 

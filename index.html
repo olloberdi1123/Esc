@@ -9,19 +9,23 @@
     <title>KEENG MARKET SaaS</title>
     
     <script>
+        // EKRAN MILTILLAMASLIGI VA KATALOG 100% OCHILISHI UCHUN KOD
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopParam = urlParams.get('shop');
+        let preSavedPhone = localStorage.getItem('saas_current_phone');
+        
+        if (shopParam) {
+            document.write('<style>#screen-login, #screen-admin { display: none !important; } #screen-client { display: block !important; }</style>');
+        } else if (preSavedPhone) {
+            document.write('<style>#screen-login, #screen-client { display: none !important; } #screen-admin { display: block !important; }</style>');
+        } else {
+            document.write('<style>#screen-admin, #screen-client { display: none !important; } #screen-login { display: flex !important; }</style>');
+        }
+
         if ('serviceWorker' in navigator) {
             let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) { refreshing = true; window.location.reload(); }
-            });
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(reg => {
-                    reg.update();
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.visibilityState === 'visible') { reg.update(); }
-                    });
-                }).catch(err => console.log('SW Xato:', err));
-            });
+            navigator.serviceWorker.addEventListener('controllerchange', () => { if (!refreshing) { refreshing = true; window.location.reload(); } });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => { reg.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { reg.update(); } }); }).catch(e => console.log(e)); });
         }
     </script>
     
@@ -37,11 +41,12 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         html, body { margin: 0; background: var(--bg); overflow: hidden; position: fixed; width: 100%; height: 100%; overscroll-behavior-y: none; }
         .screen, .tab-content { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 80px; }
-        .screen { display: none; animation: fadeIn 0.3s; } .screen.active { display: block; }
+        .screen { display: none; animation: fadeIn 0.3s; }
+        #screen-login { display: none; align-items: center; justify-content: center; background: var(--dark); color: white; }
         .tab-content { display: none !important; padding: 15px; padding-bottom: 85px; } .tab-content.active-tab { display: block !important; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; }
         .btn:active { transform: scale(0.97); }
         .btn-blue { background: var(--blue); } .btn-green { background: var(--green); } .btn-red { background: var(--red); } .btn-orange { background: var(--orange); } .btn-dark { background: var(--dark); } .btn-outline { background: transparent; border: 2px solid #ddd; color: #555; } .btn-loc { background: #0ea5e9; color: white; }
         
@@ -60,9 +65,7 @@
         .nav-btn { flex: 1; min-width: 55px; background: none; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; position: relative; } .nav-btn.active { color: var(--blue); font-weight: bold; }
         .badge { position: absolute; top: -5px; right: 0; background: var(--red); color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; display: none; z-index: 1002; border: 2px solid white; }
         
-        /* REGISTRATION PLAN CARDS */
         .reg-plan-card { border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; background: white; text-align:left;} 
-        .reg-plan-card:hover { border-color: #cbd5e1; } 
         .reg-plan-card.selected { border-color: var(--blue); background: #eff6ff; }
         .reg-addon-card { border: 2px solid #cbd5e1; border-radius: 12px; padding: 10px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; text-align:left; background: white;}
         .reg-addon-card.selected { border-color: var(--orange); background: #fffbeb; }
@@ -73,7 +76,6 @@
         .float-btn { position: fixed; bottom: 85px; right: 20px; width: 60px; height: 60px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 25px rgba(37,99,235,0.4); z-index: 800; font-size: 24px; }
         #cart-badge, #client-cart-badge { position: absolute; top: 0; right: 0; background: var(--red); font-size: 12px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; display: none; }
         
-        /* Modals & Z-INDEX FIX */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(3px); } 
         .modal-box { background: white; width: 92%; max-width: 400px; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; color: var(--dark); } 
         #custom-alert, #custom-confirm { z-index: 100005 !important; }
@@ -84,19 +86,16 @@
         .client-filter-btn.active { background: var(--blue); color: white; font-weight: bold; }
         #client-day-filters::-webkit-scrollbar { display: none; }
 
-        /* Kichik Statistika (Treyding) Dizayni */
         .mini-stat-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 16px; padding: 15px; color: white; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         .mini-stat-title { font-size: 14px; font-weight: 900; color: #cbd5e1; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; text-transform: uppercase; }
         .mini-stat-val { font-size: 18px; font-weight: bold; margin: 3px 0; }
         .trend-up { color: #10b981; font-weight: bold; }
         .trend-down { color: #ef4444; font-weight: bold; }
 
-        /* Arenda Maxsus Dizayn */
         .arenda-active-card { background: #fffbeb; border: 1px solid #fcd34d; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
         .arenda-timer { font-size: 18px; font-weight: 900; color: #b45309; margin: 5px 0; font-family: monospace; }
         .arenda-cost { font-size: 16px; color: var(--green); font-weight: bold; }
 
-        /* SaaS PAYWALL DIZAYNI */
         .plan-card { border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px; text-align: left; cursor: pointer; transition: 0.2s; background: white; }
         .plan-card.active { border-color: var(--blue); background: #eff6ff; box-shadow: 0 4px 10px rgba(37,99,235,0.1); }
         .plan-title { font-weight: 900; font-size: 16px; color: var(--dark); display: flex; justify-content: space-between; }
@@ -123,26 +122,26 @@
 <body>
     <div id="printable-area"></div>
 
-    <div id="screen-login" class="screen active">
+    <div id="screen-login" class="screen">
         <div class="login-box" style="background: white; padding: 20px; border-radius: 20px; color: var(--dark); margin:0 auto; margin-top:5vh;">
             <h1 style="font-size: 2rem; margin-bottom: 5px; color: var(--dark);">KEENG<span style="color:var(--blue)">MARKET</span></h1>
             <p style="color: #666; margin-bottom: 20px;">SaaS Savdo Tizimi</p>
 
             <div style="display: flex; background: #f1f5f9; border-radius: 12px; margin-bottom: 20px; padding: 5px;">
-                <button id="tab-btn-login" class="btn btn-blue" style="margin:0; box-shadow:none;" onclick="toggleAuthMode('login')">KIRISH</button>
-                <button id="tab-btn-register" class="btn btn-outline" style="margin:0; border:none; color:#666;" onclick="toggleAuthMode('register')">YANGI DO'KON</button>
+                <button id="tab-btn-login" class="btn btn-blue" style="margin:0; box-shadow:none;" type="button" onclick="toggleAuthMode('login')">KIRISH</button>
+                <button id="tab-btn-register" class="btn btn-outline" style="margin:0; border:none; color:#666;" type="button" onclick="toggleAuthMode('register')">YANGI DO'KON</button>
             </div>
 
-            <div id="form-login">
-                <input type="tel" id="login-phone" placeholder="Telefon raqam (901234567)">
-                <input type="password" id="login-pass" placeholder="Parol">
-                <button class="btn btn-blue" onclick="saasLogin()">TIZIMGA KIRISH</button>
-            </div>
+            <form id="form-login" onsubmit="event.preventDefault(); saasLogin();">
+                <input type="tel" id="login-phone" placeholder="Telefon raqam (901234567)" autocomplete="username" required>
+                <input type="password" id="login-pass" placeholder="Parol" autocomplete="current-password" required>
+                <button type="submit" class="btn btn-blue">TIZIMGA KIRISH</button>
+            </form>
 
-            <div id="form-register" style="display: none; text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-                <input type="text" id="reg-name" placeholder="Do'kon nomi (masalan: M-Oil)">
-                <input type="tel" id="reg-phone" placeholder="Telefon raqami (Login uchun)">
-                <input type="password" id="reg-pass" placeholder="Yangi parol o'ylab toping">
+            <form id="form-register" style="display: none; text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 5px;" onsubmit="event.preventDefault(); saasRegister();">
+                <input type="text" id="reg-name" placeholder="Do'kon nomi (masalan: M-Oil)" required>
+                <input type="tel" id="reg-phone" placeholder="Telefon raqami (Login uchun)" autocomplete="username" required>
+                <input type="password" id="reg-pass" placeholder="Yangi parol o'ylab toping" autocomplete="new-password" required>
                 
                 <h4 style="margin: 15px 0 10px 0;">1. Asosiy Tarif:</h4>
                 <div class="reg-plan-card selected" onclick="selectRegTarif('mini', this)"><div class="flex-between"><b>MINI</b><span style="color: var(--blue); font-weight: bold;">70,000 / oy</span></div><small style="color: #666;">Kassa, Ombor, Nasiya</small></div>
@@ -160,16 +159,15 @@
                     <div style="text-align:right;"><b style="color:var(--blue);">+20,000 / oy</b><br><i class="far fa-circle" id="icon-reg-arenda" style="font-size:18px; color:#ccc;"></i></div>
                 </div>
 
-                <button class="btn btn-green" style="margin-top: 15px;" onclick="saasRegister()">RO'YXATDAN O'TISH (+30 Kun Bepul)</button>
-            </div>
+                <button type="submit" class="btn btn-green" style="margin-top: 15px;">RO'YXATDAN O'TISH (+30 Kun Bepul)</button>
+            </form>
             
             <div style="margin: 20px 0; border-top: 1px dashed #ccc;"></div>
-            <button class="btn btn-outline" onclick="myAlert('Mijozlarga o\'z do\'koningizning Mini App havolasini yuboring (Sozlamalar bo\'limida mavjud).')">MIJOZ (BUYURTMA BERISH)</button>
+            <button class="btn btn-outline" type="button" onclick="myAlert('Mijozlarga o\'z do\'koningizning Mini App havolasini yuboring (Sozlamalar bo\'limida mavjud).')">MIJOZ (BUYURTMA BERISH)</button>
         </div>
     </div>
 
     <div id="screen-admin" class="screen">
-        
         <div id="global-banner" style="display:none; background:#ef4444; color:white; padding:10px 30px 10px 15px; text-align:center; font-size:13px; font-weight:bold; position:sticky; top:0; z-index:10000; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
             <span id="global-banner-text">Xabar matni</span>
             <button onclick="document.getElementById('global-banner').style.display='none'" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:white; font-size:20px;">×</button>
@@ -219,17 +217,14 @@
                     <input type="file" id="p-img-input" accept="image/*" onchange="handleImageCompress(event)" style="padding:5px; font-size:12px; margin-bottom:0; margin-top:5px;">
                     <input type="hidden" id="p-img-base64">
                     <img id="p-img-preview" style="max-width:80px; max-height:80px; border-radius:8px; display:none; margin-top:10px;">
-                    
                     <div id="premium-lock-overlay" style="position:absolute; inset:0; background:rgba(239, 246, 255, 0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; cursor:pointer;" onclick="myAlert('Ushbu funksiya faqat PREMIUM tarifida ishlaydi!')">
-                        <i class="fas fa-lock" style="font-size:24px; color:var(--red); margin-bottom:5px;"></i>
-                        <b style="font-size:12px; color:var(--red);">PREMIUM UCHUN</b>
+                        <i class="fas fa-lock" style="font-size:24px; color:var(--red); margin-bottom:5px;"></i><b style="font-size:12px; color:var(--red);">PREMIUM UCHUN</b>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 5px;"><input type="text" id="p-code" placeholder="Kodlar"><button class="btn btn-dark" style="width: auto; margin-bottom: 10px;" onclick="startScanner('ombor')"><i class="fas fa-barcode"></i></button></div>
                 <input type="text" id="p-cat" placeholder="Kategoriya" list="cat-list"><datalist id="cat-list"></datalist>
                 <input type="text" id="p-name" placeholder="Nomi">
-                
                 <div class="grid-2">
                     <select id="p-unit"><option value="dona">Dona</option><option value="kg">Kg</option></select>
                     <div style="display:flex; border:1px solid #cbd5e1; border-radius:12px; margin-bottom:10px; background:white; overflow:hidden;">
@@ -237,9 +232,7 @@
                         <button class="btn btn-green" style="margin:0; border-radius:0; width:50px; font-size:18px;" onclick="addQtyFast()"><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
-                
                 <div class="grid-2"><input type="number" id="p-buy" placeholder="Kelish"><input type="number" id="p-sell" placeholder="Sotish"></div>
-                
                 <div class="grid-2"><button class="btn btn-blue" onclick="saveProduct()">SAQLASH</button><button class="btn btn-outline" onclick="clearForm()">TOZALASH</button></div>
                 <button class="btn btn-dark" style="margin-top:10px; background:#475569;" onclick="forceSyncDb()"><i class="fas fa-cloud-upload-alt"></i> BAZAGA UZATISH</button>
             </div>
@@ -254,7 +247,6 @@
 
         <div id="tab-klientlar" class="tab-content">
             <h3>Doimiy Klientlar <i class="fas fa-star" style="color:var(--orange);"></i></h3>
-            
             <div id="client-day-filters" style="display:flex; overflow-x:auto; gap:8px; padding-bottom:10px; margin-bottom:10px;">
                 <button id="filter-btn-barchasi" class="client-filter-btn active" onclick="filterClients('barchasi')">Hamma</button>
                 <button id="filter-btn-dushanba" class="client-filter-btn" onclick="filterClients('dushanba')">Dushanba</button>
@@ -265,7 +257,6 @@
                 <button id="filter-btn-shanba" class="client-filter-btn" onclick="filterClients('shanba')">Shanba</button>
                 <button id="filter-btn-yakshanba" class="client-filter-btn" onclick="filterClients('yakshanba')">Yakshanba</button>
             </div>
-
             <input type="text" id="client-search" placeholder="Ism bo'yicha qidirish..." oninput="renderClientsTab()">
             <div id="client-list-container"></div>
         </div>
@@ -277,17 +268,9 @@
 
         <div id="tab-hisobot" class="tab-content">
             <div class="stat-card" style="background: var(--blue);"><small>KUNLIK SOF FOYDA</small><h1 id="stat-profit" style="margin: 5px 0;">0 so'm</h1></div>
-            
-            <div class="grid-2" style="margin-bottom:10px;">
-                <div class="card center"><small>Naqd</small><h3 id="stat-naqd" style="margin:5px 0; color:var(--green);">0</h3></div>
-                <div class="card center"><small>Plastik</small><h3 id="stat-plastik" style="margin:5px 0; color:var(--blue);">0</h3></div>
-            </div>
-            <div class="grid-2" style="margin-bottom:10px;">
-                <div class="card center"><small>Nasiya</small><h3 id="stat-nasiya" style="margin:5px 0; color:var(--orange);">0</h3></div>
-                <div class="card center"><small>Kli. / Ijara</small><h3 id="stat-klient" style="margin:5px 0; color:var(--dark);">0</h3></div>
-            </div>
+            <div class="grid-2" style="margin-bottom:10px;"><div class="card center"><small>Naqd</small><h3 id="stat-naqd" style="margin:5px 0; color:var(--green);">0</h3></div><div class="card center"><small>Plastik</small><h3 id="stat-plastik" style="margin:5px 0; color:var(--blue);">0</h3></div></div>
+            <div class="grid-2" style="margin-bottom:10px;"><div class="card center"><small>Nasiya</small><h3 id="stat-nasiya" style="margin:5px 0; color:var(--orange);">0</h3></div><div class="card center"><small>Kli. / Ijara</small><h3 id="stat-klient" style="margin:5px 0; color:var(--dark);">0</h3></div></div>
             <div class="card center" style="background:#f1f5f9; border: 1px dashed #ccc;"><small>UMUMIY SAVDO JAMI</small><h2 id="stat-total" style="margin:5px 0; color:var(--dark);">0 so'm</h2></div>
-            
             <button class="btn btn-outline" onclick="showTodayDetails()">BUGUNGI SAVDOLAR</button>
             <div class="card"><h3>Kunni Yopish</h3><input type="text" id="close-comment" placeholder="Izoh"><button class="btn btn-red" onclick="closeDay()">KUNNI YOPISH</button></div>
             <div class="grid-2"><button class="btn btn-orange" onclick="closePeriod('week')">HAFTALIK</button><button class="btn btn-dark" onclick="closePeriod('month')">OYLIK</button></div>
@@ -318,34 +301,16 @@
                     <div><small style="color:#94a3b8;">Bu oy</small><div id="mini-stat-month" class="mini-stat-val">0</div><div id="mini-stat-month-trend" style="font-size:11px;">--</div></div>
                 </div>
             </div>
-            
             <div class="card">
                 <h3>Do'kon Sozlamalari</h3><p style="font-size:12px; color:#666;">Bu ma'lumotlar chekda chiqadi</p>
                 <input type="text" id="set-dokon-nomi" placeholder="Do'kon nomi">
                 <input type="tel" id="set-telefon" placeholder="Bog'lanish uchun telefon">
                 <input type="text" id="set-chek-footer" placeholder="Chek tagidagi yozuv (Masalan: Xaridingiz uchun rahmat!)">
-                
-                <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
-                    <h4 style="margin-top:0; color:var(--blue);"><i class="fab fa-telegram"></i> Telegram Mini App</h4>
-                    <p style="font-size:12px; color:#666;">BotFather'dan bot oching va Web App URL qismiga ushbu havolani joylashtiring:</p>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <input type="password" id="mini-app-link" readonly style="flex-grow:1; background:#f1f5f9; font-size:13px; cursor:default; margin:0;" value="">
-                        <button class="btn btn-blue" style="width:auto; margin:0; padding:10px;" onclick="copyBotLink()"><i class="fas fa-copy"></i> Nusxa</button>
-                    </div>
-                </div>
-                <div style="margin-top: 15px;">
-                    <p style="font-size:12px; color:#666; margin-bottom:5px;">Qo'shimcha SMS borishi uchun (Ixtiyoriy):</p>
-                    <input type="text" id="set-tg-token" placeholder="Bot Token">
-                    <input type="text" id="set-tg-chat" placeholder="Chat ID">
-                </div>
+                <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;"><h4 style="margin-top:0; color:var(--blue);"><i class="fab fa-telegram"></i> Telegram Mini App</h4><div style="display:flex; gap:10px; align-items:center;"><input type="password" id="mini-app-link" readonly style="flex-grow:1; background:#f1f5f9; font-size:13px; cursor:default; margin:0;" value=""><button class="btn btn-blue" style="width:auto; margin:0; padding:10px;" onclick="copyBotLink()"><i class="fas fa-copy"></i> Nusxa</button></div></div>
+                <div style="margin-top: 15px;"><input type="text" id="set-tg-token" placeholder="Bot Token"><input type="text" id="set-tg-chat" placeholder="Chat ID"></div>
                 <button class="btn btn-green" onclick="saveSozlamalar()">SAQLASH</button>
             </div>
-
-            <div class="card" style="background: #fff; border: 1px solid #ddd;">
-                <h3 style="margin-top:0"><i class="fab fa-bluetooth-b" style="color: var(--blue);"></i> Bluetooth Printer</h3>
-                <button class="btn btn-dark" onclick="connectBluetooth()"><i class="fas fa-search"></i> Qurilma qidirish</button>
-            </div>
-            
+            <div class="card" style="background: #fff; border: 1px solid #ddd;"><h3 style="margin-top:0"><i class="fab fa-bluetooth-b" style="color: var(--blue);"></i> Bluetooth Printer</h3><button class="btn btn-dark" onclick="connectBluetooth()"><i class="fas fa-search"></i> Qurilma qidirish</button></div>
             <button class="btn btn-red" onclick="saasLogout()" style="margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Tizimdan chiqish</button>
         </div>
 
@@ -356,7 +321,7 @@
             <button class="nav-btn" id="nav-btn-klientlar" onclick="switchTab('klientlar', this)"><i class="fas fa-users"></i> Klient</button>
             <button class="nav-btn" id="nav-btn-online" onclick="switchTab('online', this)"><i class="fas fa-globe"></i> Online <span id="nav-badge" class="badge">0</span></button>
             <button class="nav-btn" id="nav-btn-hisobot" onclick="switchTab('hisobot', this)"><i class="fas fa-chart-pie"></i> Hisobot</button>
-            <button class="nav-btn locked" id="nav-btn-arenda" onclick="switchTab('arenda', this)"><i class="fas fa-stopwatch"></i> Arenda</button>
+            <button class="nav-btn" id="nav-btn-arenda" onclick="switchTab('arenda', this)"><i class="fas fa-stopwatch"></i> Arenda</button>
             <button class="nav-btn" onclick="switchTab('sozlamalar', this)"><i class="fas fa-cog"></i> Sozlama</button>
         </nav>
     </div>
@@ -385,10 +350,14 @@
                 <div class="plan-card" onclick="selectPayPlan('premium', 140000, this)"><div class="plan-title">PREMIUM <span class="plan-price">140,000 so'm / oy</span></div><ul class="plan-features"><li><b>STANDART</b> dagi barcha qulayliklar</li><li>Tovarlarni rasm bilan saqlash</li><li>Mijozlar uchun Onlayn Do'kon</li><li>Onlayn buyurtma qabul qilish</li></ul></div>
             </div>
             
+            <div class="addon-card" id="addon-client-card" onclick="toggleAddonClient()"><div class="plan-title" style="color:var(--orange);"><span><i class="fas fa-star"></i> Klient Moduli</span> <span>+10,000 so'm</span></div><ul class="plan-features" style="color:#92400e;"><li style="color:#92400e;">Doimiy mijozlar bazasini yuritish</li><li style="color:#92400e;">Xarid tarixini ko'rish</li></ul><div style="text-align:right; margin-top:5px;"><b id="addon-status-text" style="color:var(--orange); border:1px solid; padding:3px 8px; border-radius:8px; font-size:12px;">QO'SHISH UCHUN BOSING</b></div></div>
+
+            <div class="total-pay-box"><div><div id="skidka-badge" class="discount-badge" style="display:none;">Maxsus chegirma!</div><div>JAMI TO'LOV:</div></div><div style="text-align:right;"><span id="old-total-price" class="old-price" style="display:none;">0</span><span id="final-total-price" style="font-size:24px; color:var(--green);">0 so'm</span></div></div>
             <button class="btn btn-blue" style="background:#0052cc; font-size:18px; padding:15px; margin-top:15px; box-shadow:0 4px 15px rgba(0,82,204,0.4);" onclick="processSubscriptionPayment()"><i class="fas fa-credit-card"></i> TO'LOV QILISH</button>
             <div id="manual-payment-info" style="display:none; background:white; padding:15px; border-radius:12px; margin-top:15px; border:2px dashed var(--green); text-align:center;"><h3 style="margin-top:0; color:var(--dark);">Karta orqali to'lov</h3><p style="font-size:13px; color:#666;">Iltimos, quyidagi kartaga pul o'tkazing va chekni adminga yuboring.</p><div style="font-size:20px; font-weight:900; letter-spacing:2px; color:var(--blue); margin:10px 0;" id="admin-card-number">8600 **** **** ****</div><div style="font-weight:bold; color:var(--dark); margin-bottom:15px;" id="admin-card-name">Karta Egasi</div><a href="https://t.me/mamadaliyevv_o" target="_blank" class="btn btn-green"><i class="fab fa-telegram"></i> Chekni Adminga yuborish</a></div>
             <div style="text-align:center; margin-top:15px;"><a href="https://t.me/mamadaliyevv_o" target="_blank" style="color:var(--blue); text-decoration:none; font-weight:bold; font-size:14px;"><i class="fab fa-telegram"></i> @mamadaliyevv_o</a><span style="color:#ccc; margin:0 5px;">|</span><a href="tel:+998934531123" style="color:var(--blue); text-decoration:none; font-weight:bold; font-size:14px;"><i class="fas fa-phone"></i> 93 453 11 23</a></div>
-            <button class="btn btn-outline" style="border:none; color:var(--red); margin-top:15px; background:white;" onclick="saasLogout()">Tizimdan chiqish</button>
+            
+            <button class="btn btn-outline" style="border:none; color:var(--red); margin-top:15px; background:white; z-index:100000; position:relative;" onclick="saasLogout()">Tizimdan chiqish</button>
         </div>
     </div>
 
@@ -402,43 +371,12 @@
             </div>
             <input type="number" id="rent-qty" placeholder="Umumiy soni">
             <button class="btn btn-green" onclick="saveRentItem()">SAQLASH</button>
-            <button class="btn btn-red" onclick="closeModal('modal-add-rent')">BEKOR (ORTGA)</button>
+            <button class="btn btn-red" onclick="closeModal('modal-add-rent')">BEKOR QILISH</button>
         </div>
     </div>
     
-    <div id="modal-start-rent" class="modal">
-        <div class="modal-box">
-            <h3>Ijaraga Berish</h3>
-            <b id="start-rent-item-name" style="color:var(--blue); margin-bottom:10px; display:block; font-size:18px;"></b>
-            <input type="hidden" id="start-rent-item-id">
-            <input type="text" id="start-rent-client" placeholder="Mijoz ismi">
-            <input type="tel" id="start-rent-phone" placeholder="Telefon raqami (ixtiyoriy)">
-            <button class="btn btn-green" onclick="confirmStartRental()"><i class="fas fa-play"></i> VAQTNI BOSHLASH</button>
-            <button class="btn btn-red" onclick="closeModal('modal-start-rent')">BEKOR (ORTGA)</button>
-        </div>
-    </div>
-
-    <div id="modal-finish-rent" class="modal">
-        <div class="modal-box">
-            <h3>Ijarani Yakunlash</h3>
-            <div style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;">
-                <b id="finish-rent-client" style="font-size:18px; color:var(--dark);"></b><br>
-                <span id="finish-rent-item" style="color:#666; font-size:14px;"></span><br>
-                <div style="margin-top:15px; font-size:14px; border-top:1px dashed #ccc; padding-top:10px;">
-                    O'tgan vaqt: <b id="finish-rent-time" style="color:var(--orange);"></b>
-                </div>
-                <div style="margin-top:5px; font-size:22px; font-weight:900;">
-                    To'lov: <b id="finish-rent-cost" style="color:var(--green);"></b>
-                </div>
-            </div>
-            <input type="hidden" id="finish-rent-active-id">
-            <div class="grid-2">
-                <button class="btn btn-green" onclick="confirmFinishRental('naqd')">NAQD OLISH</button>
-                <button class="btn btn-blue" onclick="confirmFinishRental('plastik')">PLASTIK</button>
-            </div>
-            <button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal('modal-finish-rent')">BEKOR (YOPISH)</button>
-        </div>
-    </div>
+    <div id="modal-start-rent" class="modal"><div class="modal-box"><h3>Ijaraga Berish</h3><b id="start-rent-item-name" style="color:var(--blue); margin-bottom:10px; display:block; font-size:18px;"></b><input type="hidden" id="start-rent-item-id"><input type="text" id="start-rent-client" placeholder="Mijoz ismi"><input type="tel" id="start-rent-phone" placeholder="Telefon raqami (ixtiyoriy)"><button class="btn btn-green" onclick="confirmStartRental()"><i class="fas fa-play"></i> VAQTNI BOSHLASH</button><button class="btn btn-red" onclick="closeModal('modal-start-rent')">BEKOR QILISH</button></div></div>
+    <div id="modal-finish-rent" class="modal"><div class="modal-box"><h3>Ijarani Yakunlash</h3><div style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;"><b id="finish-rent-client" style="font-size:18px; color:var(--dark);"></b><br><span id="finish-rent-item" style="color:#666; font-size:14px;"></span><br><div style="margin-top:15px; font-size:14px; border-top:1px dashed #ccc; padding-top:10px;">O'tgan vaqt: <b id="finish-rent-time" style="color:var(--orange);"></b></div><div style="margin-top:5px; font-size:22px; font-weight:900;">To'lov: <b id="finish-rent-cost" style="color:var(--green);"></b></div></div><input type="hidden" id="finish-rent-active-id"><div class="grid-2"><button class="btn btn-green" onclick="confirmFinishRental('naqd')">NAQD OLISH</button><button class="btn btn-blue" onclick="confirmFinishRental('plastik')">PLASTIK</button></div><button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal('modal-finish-rent')">BEKOR QILISH</button></div></div>
 
     <div id="custom-alert" class="modal"><div class="modal-box custom-alert-box"><div class="custom-alert-icon"><i class="fas fa-info-circle"></i></div><div id="custom-alert-msg" class="custom-alert-title"></div><button class="btn btn-blue" onclick="closeModal('custom-alert')">Tushunarli</button></div></div>
     <div id="custom-confirm" class="modal"><div class="modal-box custom-alert-box"><div class="custom-alert-icon" style="color:var(--orange)"><i class="fas fa-question-circle"></i></div><div id="custom-confirm-msg" class="custom-alert-title"></div><div class="grid-2"><button id="confirm-yes-btn" class="btn btn-green">HA</button><button class="btn btn-red" onclick="closeModal('custom-confirm')">YO'Q</button></div></div></div>
@@ -454,21 +392,12 @@
             </div>
             <div id="admin-check-content" class="receipt-style"></div>
             <button class="btn btn-green" onclick="completeCheckout()">SOTISH</button>
-            <button class="btn btn-red" onclick="closeModal('modal-admin-check')">BEKOR (ORTGA)</button>
+            <button class="btn btn-red" onclick="closeModal('modal-admin-check')">BEKOR QILISH</button>
         </div>
     </div>
     
-    <div id="modal-client-check" class="modal"><div class="modal-box"><h3>Tasdiqlash</h3><div id="client-check-content" class="receipt-style"></div><button class="btn btn-green" onclick="submitOrderFinal()">TASDIQLASH</button><button class="btn btn-red" onclick="closeModal('modal-client-check')">BEKOR (ORTGA)</button></div></div>
-    
-    <div id="modal-debt-create" class="modal">
-        <div class="modal-box">
-            <h3>Nasiya Yozish</h3><p>Jami: <b id="debt-modal-total">0</b></p>
-            <input type="text" id="debt-customer-name" placeholder="Ism">
-            <input type="text" id="debt-customer-phone" placeholder="Tel">
-            <button class="btn btn-green" onclick="confirmDebt()">DAVOM ETISH</button>
-            <button class="btn btn-red" onclick="closeModal('modal-debt-create')">BEKOR (ORTGA)</button>
-        </div>
-    </div>
+    <div id="modal-client-check" class="modal"><div class="modal-box"><h3>Tasdiqlash</h3><div id="client-check-content" class="receipt-style"></div><button class="btn btn-green" onclick="submitOrderFinal()">TASDIQLASH</button><button class="btn btn-red" onclick="closeModal('modal-client-check')">BEKOR QILISH</button></div></div>
+    <div id="modal-debt-create" class="modal"><div class="modal-box"><h3>Nasiya Yozish</h3><p>Jami: <b id="debt-modal-total">0</b></p><input type="text" id="debt-customer-name" placeholder="Ism"><input type="text" id="debt-customer-phone" placeholder="Tel"><button class="btn btn-green" onclick="confirmDebt()">DAVOM ETISH</button><button class="btn btn-red" onclick="closeModal('modal-debt-create')">BEKOR QILISH</button></div></div>
     
     <div id="modal-debt-info" class="modal">
         <div class="modal-box" style="height:80vh;">
@@ -497,7 +426,7 @@
                 <option value="dushanba">Dushanba</option><option value="seshanba">Seshanba</option><option value="chorshanba">Chorshanba</option><option value="payshanba">Payshanba</option><option value="juma">Juma</option><option value="shanba">Shanba</option><option value="yakshanba">Yakshanba</option>
             </select>
             <button class="btn btn-green" onclick="confirmClientCheckout()">DAVOM ETISH</button>
-            <button class="btn btn-red" onclick="closeModal('modal-client-create')">BEKOR (ORTGA)</button>
+            <button class="btn btn-red" onclick="closeModal('modal-client-create')">BEKOR QILISH</button>
         </div>
     </div>
 
@@ -520,43 +449,12 @@
         </div>
     </div>
 
-    <div id="modal-client-debt" class="modal">
-        <div class="modal-box" style="text-align:center; max-height:80vh;">
-            <h3>Qarzni tekshirish</h3>
-            <p style="font-size:13px; color:#666;">Do'konga kiritgan raqamingizni yozing:</p>
-            <input type="tel" id="client-debt-check-phone" placeholder="Masalan: 901234567" style="text-align:center;">
-            <button class="btn btn-blue" onclick="fetchMyDebt()">TEKSHIRISH</button>
-            <button class="btn btn-outline" onclick="closeModal('modal-client-debt')">YOPISH</button>
-            <div id="client-debt-result" style="margin-top:15px; font-weight:bold; overflow-y:auto; max-height:40vh; text-align:left;"></div>
-        </div>
-    </div>
-
-    <div id="modal-client-history-check" class="modal">
-        <div class="modal-box" style="text-align:center; max-height:80vh;">
-            <h3>Xaridlar tarixi</h3>
-            <p style="font-size:13px; color:#666;">Do'konga kiritgan raqamingizni yozing:</p>
-            <input type="tel" id="client-history-check-phone" placeholder="Masalan: 901234567" style="text-align:center;">
-            <button class="btn btn-blue" onclick="fetchMyClientHistory()">TEKSHIRISH</button>
-            <button class="btn btn-outline" onclick="closeModal('modal-client-history-check')">YOPISH</button>
-            <div id="client-history-result" style="margin-top:15px; font-weight:bold; overflow-y:auto; max-height:40vh; text-align:left;"></div>
-        </div>
-    </div>
-    
-    <div id="modal-archive-detail" class="modal">
-        <div class="modal-box" style="height:90vh;">
-            <div class="flex-between">
-                <h3 id="archive-title" style="margin:0">Tafsilotlar</h3>
-                <button onclick="closeModal('modal-archive-detail')" style="background:none; border:none; font-size:24px;">×</button>
-            </div>
-            <div id="archive-detail-content" style="flex-grow:1; overflow-y:auto; margin-top:10px;"></div>
-            <button class="btn btn-red" style="margin-top:10px;" onclick="closeModal('modal-archive-detail')">YOPISH</button>
-        </div>
-    </div>
-    
+    <div id="modal-client-debt" class="modal"><div class="modal-box" style="text-align:center; max-height:80vh;"><h3>Qarzni tekshirish</h3><p style="font-size:13px; color:#666;">Do'konga kiritgan raqamingizni yozing:</p><input type="tel" id="client-debt-check-phone" placeholder="Masalan: 901234567" style="text-align:center;"><button class="btn btn-blue" onclick="fetchMyDebt()">TEKSHIRISH</button><button class="btn btn-outline" onclick="closeModal('modal-client-debt')">YOPISH</button><div id="client-debt-result" style="margin-top:15px; font-weight:bold; overflow-y:auto; max-height:40vh; text-align:left;"></div></div></div>
+    <div id="modal-client-history-check" class="modal"><div class="modal-box" style="text-align:center; max-height:80vh;"><h3>Xaridlar tarixi</h3><p style="font-size:13px; color:#666;">Do'konga kiritgan raqamingizni yozing:</p><input type="tel" id="client-history-check-phone" placeholder="Masalan: 901234567" style="text-align:center;"><button class="btn btn-blue" onclick="fetchMyClientHistory()">TEKSHIRISH</button><button class="btn btn-outline" onclick="closeModal('modal-client-history-check')">YOPISH</button><div id="client-history-result" style="margin-top:15px; font-weight:bold; overflow-y:auto; max-height:40vh; text-align:left;"></div></div></div>
+    <div id="modal-archive-detail" class="modal"><div class="modal-box" style="height:90vh;"><div class="flex-between"><h3 id="archive-title" style="margin:0">Tafsilotlar</h3><button onclick="closeModal('modal-archive-detail')" style="background:none; border:none; font-size:24px;">×</button></div><div id="archive-detail-content" style="flex-grow:1; overflow-y:auto; margin-top:10px;"></div><button class="btn btn-red" style="margin-top:10px;" onclick="closeModal('modal-archive-detail')">YOPISH</button></div></div>
     <div id="scanner-modal" class="modal" style="background:black;"><div style="width:100%; height:100%; display:flex; flex-direction:column;"><div id="reader" style="width:100%; flex-grow:1;"></div><button class="btn btn-red big-btn" style="margin:20px;" onclick="stopScanner()">YOPISH</button></div></div>
 
     <script>
-        // FIREBASE VA BAZA SOZLAMALARI
         const firebaseConfig = { apiKey: "AIzaSyA8F47YRcEPTIwyI7AjSeqXIyddFpz8orU", authDomain: "keeng-market.firebaseapp.com", databaseURL: "https://keeng-market-default-rtdb.firebaseio.com", projectId: "keeng-market", storageBucket: "keeng-market.firebasestorage.app", messagingSenderId: "688523074873", appId: "1:688523074873:web:016b69f98a238bd19d5ce8" };
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
 
@@ -578,90 +476,37 @@
         const orderSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
         let prevOrderCount = -1;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const shopParam = urlParams.get('shop');
-
-        // BARCHA MODALLARNI TO'G'RI YOPISH FUNKSIYASI (Eng muhim tuzatish shu yerda)
-        function closeModal(id) {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-        }
-
-        // CONFIRM (TASDIQLASH) FUNKSIYASI
-        function myConfirm(msg, yesCb) { 
-            document.getElementById('custom-confirm-msg').innerText = msg; 
-            document.getElementById('custom-confirm').style.display = 'flex'; 
-            confirmCallback = yesCb; 
-        }
-        
-        document.getElementById('confirm-yes-btn').onclick = function() { 
-            if (confirmCallback) confirmCallback(); 
-            closeModal('custom-confirm'); 
-        };
-
-        // ALERT FUNKSIYASI
-        function myAlert(msg) { 
-            document.getElementById('custom-alert-msg').innerText = msg; 
-            document.getElementById('custom-alert').style.display = 'flex'; 
-        }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function myConfirm(msg, yesCb) { document.getElementById('custom-confirm-msg').innerText = msg; document.getElementById('custom-confirm').style.display = 'flex'; confirmCallback = yesCb; }
+        document.getElementById('confirm-yes-btn').onclick = function() { if (confirmCallback) confirmCallback(); closeModal('custom-confirm'); };
+        function myAlert(msg) { document.getElementById('custom-alert-msg').innerText = msg; document.getElementById('custom-alert').style.display = 'flex'; }
 
         window.onload = () => {
             window.addEventListener('online', syncToCloud);
             window.addEventListener('offline', () => myAlert("Diqqat! Siz oflayn rejimdasiz."));
             if (shopParam) { if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.expand) window.Telegram.WebApp.expand(); openClientModeFromUrl(shopParam); } 
             else { checkLocalLogin(); }
-            
             setInterval(() => { if(document.getElementById('tab-arenda').classList.contains('active-tab')) renderRentalTab(); }, 60000);
         };
 
-        // KICHIK STATISTIKA
         function updateMiniStats() {
             let todayTotal = SESSION.sales ? SESSION.sales.reduce((a, b) => a + b.total, 0) : 0;
             let todayDate = new Date(); let currentMonth = todayDate.getMonth(); let currentYear = todayDate.getFullYear();
             let weekTotal = todayTotal; let prevWeekTotal = 0; let monthTotal = todayTotal; let prevMonthTotal = 0;
             let archives = ARCHIVES.daily || []; let revArchives = [...archives].reverse();
-            
             for (let i = 0; i < 6 && i < revArchives.length; i++) { weekTotal += revArchives[i].totalSum || 0; }
             for (let i = 6; i < 13 && i < revArchives.length; i++) { prevWeekTotal += revArchives[i].totalSum || 0; }
-            
-            revArchives.forEach(a => {
-                try {
-                    let d = new Date(a.date.split(',')[0]);
-                    if (!isNaN(d.getTime())) { 
-                        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) { monthTotal += a.totalSum || 0; } 
-                        else if (d.getMonth() === (currentMonth === 0 ? 11 : currentMonth - 1)) { prevMonthTotal += a.totalSum || 0; } 
-                    }
-                } catch(e){}
-            });
-            
-            document.getElementById('mini-stat-week').innerText = weekTotal.toLocaleString() + " so'm"; 
-            document.getElementById('mini-stat-month').innerText = monthTotal.toLocaleString() + " so'm";
-            
-            let weekTrend = prevWeekTotal ? (((weekTotal - prevWeekTotal) / prevWeekTotal) * 100).toFixed(1) : (weekTotal > 0 ? 100 : 0); 
-            let monthTrend = prevMonthTotal ? (((monthTotal - prevMonthTotal) / prevMonthTotal) * 100).toFixed(1) : (monthTotal > 0 ? 100 : 0);
-            
+            revArchives.forEach(a => { try { let d = new Date(a.date.split(',')[0]); if (!isNaN(d.getTime())) { if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) { monthTotal += a.totalSum || 0; } else if (d.getMonth() === (currentMonth === 0 ? 11 : currentMonth - 1)) { prevMonthTotal += a.totalSum || 0; } } } catch(e){} });
+            document.getElementById('mini-stat-week').innerText = weekTotal.toLocaleString() + " so'm"; document.getElementById('mini-stat-month').innerText = monthTotal.toLocaleString() + " so'm";
+            let weekTrend = prevWeekTotal ? (((weekTotal - prevWeekTotal) / prevWeekTotal) * 100).toFixed(1) : (weekTotal > 0 ? 100 : 0); let monthTrend = prevMonthTotal ? (((monthTotal - prevMonthTotal) / prevMonthTotal) * 100).toFixed(1) : (monthTotal > 0 ? 100 : 0);
             let wClass = weekTrend >= 0 ? 'trend-up' : 'trend-down'; let wIcon = weekTrend >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'; let wSign = weekTrend > 0 ? '+' : '';
             document.getElementById('mini-stat-week-trend').innerHTML = `<span class="${wClass}"><i class="fas ${wIcon}"></i> ${wSign}${weekTrend}%</span> o'tgan haftadan`;
-            
             let mClass = monthTrend >= 0 ? 'trend-up' : 'trend-down'; let mIcon = monthTrend >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'; let mSign = monthTrend > 0 ? '+' : '';
             document.getElementById('mini-stat-month-trend').innerHTML = `<span class="${mClass}"><i class="fas ${mIcon}"></i> ${mSign}${monthTrend}%</span> o'tgan oydan`;
         }
 
-        // REGISTRATION / PAYWALL LOGIC
-        function selectRegTarif(name, element) {
-            document.querySelectorAll('.reg-plan-card').forEach(c => c.classList.remove('selected'));
-            element.classList.add('selected');
-            document.getElementById('selected-tarif').value = name;
-        }
-        function toggleRegAddon(type) {
-            const card = document.getElementById('reg-addon-' + type);
-            const icon = document.getElementById('icon-reg-' + type);
-            if (card.classList.contains('selected')) {
-                card.classList.remove('selected'); icon.className = 'far fa-circle'; icon.style.color = '#ccc';
-            } else {
-                card.classList.add('selected'); icon.className = 'fas fa-check-circle'; icon.style.color = (type === 'client') ? 'var(--orange)' : 'var(--blue)';
-            }
-        }
+        function selectRegTarif(name, element) { document.querySelectorAll('.reg-plan-card').forEach(c => c.classList.remove('selected')); element.classList.add('selected'); document.getElementById('selected-tarif').value = name; }
+        function toggleRegAddon(type) { const card = document.getElementById('reg-addon-' + type); const icon = document.getElementById('icon-reg-' + type); if (card.classList.contains('selected')) { card.classList.remove('selected'); icon.className = 'far fa-circle'; icon.style.color = '#ccc'; } else { card.classList.add('selected'); icon.className = 'fas fa-check-circle'; icon.style.color = (type === 'client') ? 'var(--orange)' : 'var(--blue)'; } }
         function selectPayPlan(name, price, element) { document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('active')); element.classList.add('active'); selectedBaseTarifPrice = price; document.getElementById('selected-tarif').value = name; calculateTotalSubscription(); }
         function toggleAddonClient() { isClientAddonSelected = !isClientAddonSelected; const card = document.getElementById('addon-client-card'); const txt = document.getElementById('addon-status-text'); if(isClientAddonSelected) { card.classList.add('active'); txt.innerText = "QO'SHILDI ✅"; txt.style.background = "white"; } else { card.classList.remove('active'); txt.innerText = "QO'SHISH UCHUN BOSING"; txt.style.background = "transparent"; } calculateTotalSubscription(); }
         
@@ -684,7 +529,6 @@
             });
         }
 
-        // LOGIN / REGISTER
         function checkLocalLogin() { const savedPhone = localStorage.getItem('saas_current_phone'); if (savedPhone) { currentUserPhone = savedPhone; loadFromLocal(savedPhone); checkSubscription(); document.getElementById('screen-login').classList.remove('active'); document.getElementById('screen-admin').classList.add('active'); const myUrl = window.location.href.split('?')[0]; document.getElementById('mini-app-link').value = myUrl + "?shop=" + savedPhone; applyTariffLocks(); refreshUI(); if (navigator.onLine) { startListeningTenant(currentUserPhone); syncToCloud(); } } }
         function loadFromLocal(phone) { const localData = localStorage.getItem('saas_data_' + phone); if (localData) { const d = JSON.parse(localData); dokonSozlamalar = d.sozlamalar || dokonSozlamalar; currentTarif = dokonSozlamalar.tarif; DB = d.DB || []; DEBTS = d.DEBTS || []; CLIENTS = d.CLIENTS || []; RENTAL_ITEMS = d.RENTAL_ITEMS || []; ACTIVE_RENTALS = d.ACTIVE_RENTALS || []; let rawOrders = d.ORDERS || []; ORDERS = Array.isArray(rawOrders) ? rawOrders : Object.values(rawOrders); prevOrderCount = ORDERS.length; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; } }
         function saveToLocal() { if (!currentUserPhone) return; const dataToSave = { sozlamalar: dokonSozlamalar, DB: DB, DEBTS: DEBTS, CLIENTS: CLIENTS, ORDERS: ORDERS, RENTAL_ITEMS: RENTAL_ITEMS, ACTIVE_RENTALS: ACTIVE_RENTALS, SESSION: SESSION, ARCHIVES: ARCHIVES }; localStorage.setItem('saas_data_' + currentUserPhone, JSON.stringify(dataToSave)); localStorage.setItem('saas_needs_sync', 'true'); }
@@ -736,16 +580,20 @@
                 startListeningTenant(phone); document.getElementById('screen-login').classList.remove('active'); document.getElementById('screen-admin').classList.add('active'); applyTariffLocks(); refreshUI();
             });
         }
-        function saasLogout() { myConfirm("Tizimdan chiqishni xohlaysizmi?", () => { localStorage.removeItem('saas_current_phone'); localStorage.removeItem('saas_data_' + currentUserPhone); location.reload(); }); }
+        
+        function saasLogout() { 
+            myConfirm("Tizimdan chiqishni xohlaysizmi?", () => { 
+                localStorage.removeItem('saas_current_phone'); 
+                if(currentUserPhone) localStorage.removeItem('saas_data_' + currentUserPhone); 
+                location.reload(); 
+            }); 
+        }
         
         function saveSozlamalar() { db.ref("saas_dokonlar/" + currentUserPhone + "/sozlamalar").update({ dokon_nomi: document.getElementById('set-dokon-nomi').value, telefon: document.getElementById('set-telefon').value, chek_footer: document.getElementById('set-chek-footer').value, tg_bot_token: document.getElementById('set-tg-token').value.trim(), tg_chat_id: document.getElementById('set-tg-chat').value.trim() }).then(() => { myAlert("Sozlamalar saqlandi!"); }); }
 
         function checkSubscription() {
             if (!dokonSozlamalar || !dokonSozlamalar.obuna_tugash_sanasi) return;
             const expDate = new Date(dokonSozlamalar.obuna_tugash_sanasi); const today = new Date();
-            if (dokonSozlamalar.tarif) { let p = (dokonSozlamalar.tarif === 'premium') ? 140000 : (dokonSozlamalar.tarif === 'standart' ? 90000 : 70000); document.querySelectorAll('.plan-card').forEach(c => { if(c.innerHTML.includes(dokonSozlamalar.tarif.toUpperCase())) { selectPayPlan(dokonSozlamalar.tarif, p, c); } }); }
-            if (dokonSozlamalar.klient_yoqilgan && !isClientAddonSelected) { toggleAddonClient(); }
-            calculateTotalSubscription();
             if (dokonSozlamalar.status === 'bloklangan' || today > expDate) { document.getElementById('modal-expired').style.display = 'flex'; } else { document.getElementById('modal-expired').style.display = 'none'; }
         }
 
@@ -754,7 +602,6 @@
             const lockOverlay = document.getElementById('premium-lock-overlay'); if(lockOverlay) lockOverlay.style.display = (currentTarif === 'premium') ? 'none' : 'flex';
             
             if (!dokonSozlamalar.klient_yoqilgan) { document.getElementById('nav-btn-klientlar').classList.add('locked'); if (document.getElementById('tab-klientlar').classList.contains('active-tab')) { switchTab('kassa', document.querySelector('.bottom-nav button')); } } 
-            
             if (!dokonSozlamalar.arenda_yoqilgan) { document.getElementById('nav-btn-arenda').classList.add('locked'); if (document.getElementById('tab-arenda').classList.contains('active-tab')) { switchTab('kassa', document.querySelector('.bottom-nav button')); } } 
             
             if (currentTarif === 'mini') { document.getElementById('nav-btn-hisobot').classList.add('locked'); document.getElementById('nav-btn-online').classList.add('locked'); if (document.getElementById('tab-hisobot').classList.contains('active-tab') || document.getElementById('tab-online').classList.contains('active-tab')) { switchTab('kassa', document.querySelector('.bottom-nav button')); } } else if (currentTarif === 'standart') { document.getElementById('nav-btn-online').classList.add('locked'); if (document.getElementById('tab-online').classList.contains('active-tab')) { switchTab('kassa', document.querySelector('.bottom-nav button')); } } 
@@ -810,7 +657,7 @@
                     <div style="font-size:11px; color:#94a3b8; margin-bottom:5px;">Berildi: ${startDate}</div>
                     <div class="flex-between" style="margin-top:5px; align-items:flex-end;">
                         <div><div style="font-size:12px; color:#666;">O'tgan vaqt:</div><div class="arenda-timer">${calc.timeStr}</div></div>
-                        <div style="text-align:right;"><div style="font-size:12px; color:#666;">Hisob:</div><div class="arenda-cost">${calc.cost.toLocaleString()} so'm</div></div>
+                        <div style="text-align:right;"><div style="font-size:12px; color:#666;">Joriy Hisob:</div><div class="arenda-cost">${calc.cost.toLocaleString()} so'm</div></div>
                     </div>
                     <button class="btn btn-green small" style="margin-top:10px; padding:8px;" onclick="openFinishRentalModal(${act.id})">YAKUNLASH VA PUL OLISH</button>
                 </div>`;
@@ -837,7 +684,7 @@
             ACTIVE_RENTALS = ACTIVE_RENTALS.filter(x => x.id !== activeId); closeModal('modal-finish-rent'); saveToCloud(); renderRentalTab(); renderStats(); myAlert("Yakunlandi va Hisobotga qo'shildi!");
         }
 
-        // QOLGAN FUNKSIYALAR (KASSA, HISOBOT, KLIENT, VA H.K.)
+        // KASSA VA SOTUV FUNKSIYALARI
         function refreshUI() { if (document.getElementById('screen-admin').classList.contains('active')) { renderKassa(); renderStock(); renderStats(); renderDebts(); renderClientsTab(); updateCartUI(); renderOnlineOrders(); checkSubscription(); if(document.getElementById('tab-sozlamalar').classList.contains('active-tab')) updateMiniStats(); if(document.getElementById('tab-arenda').classList.contains('active-tab')) renderRentalTab(); } if (document.getElementById('screen-client').classList.contains('active')) { if (activeClientCat) renderClientProducts(activeClientCat); else renderClientCategories(); updateClientCartUI(); } const b = document.getElementById('nav-badge'); const c = ORDERS ? ORDERS.length : 0; if (c > 0) { b.style.display = 'block'; b.innerText = c; } else b.style.display = 'none'; }
         function renderKassa() { const s = document.getElementById('search-inp').value.toLowerCase(); document.getElementById('kassa-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || p.cat.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).map(p => `<div class="card flex-between" onclick="addToCart(${p.id})"><div><span class="cat-tag">${p.cat}</span><div style="font-weight:bold;">${p.name}</div><small style="color:#666">Ombor: ${p.qty}</small></div><b>${p.sell.toLocaleString()}</b></div>`).join(''); }
         function addToCart(id) { const p = DB.find(x => x.id === id); if (!p || p.qty <= 0) return myAlert("Tugagan!"); const ex = CART.find(x => x.id === id); if (ex) ex.cartQty++; else CART.push({ ...p, cartQty: 1, customPrice: p.sell }); updateCartUI(); }
@@ -851,20 +698,23 @@
         }
         
         function shareToIPrint() { const checkDiv = document.getElementById('admin-check-content'); const oldBorder = checkDiv.style.border; checkDiv.style.border = "none"; checkDiv.style.padding = "20px"; checkDiv.style.background = "#ffffff"; checkDiv.style.color = "#000000"; html2canvas(checkDiv, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => { checkDiv.style.border = oldBorder; checkDiv.style.padding = "15px"; canvas.toBlob(blob => { const file = new File([blob], "chek.png", { type: "image/png" }); if (navigator.share) navigator.share({ title: 'Xarid cheki', files: [file] }).catch(e => { myAlert("Ulashish bekor qilindi yoki xatolik."); }); else myAlert("Qurilmangiz rasm ulashishni qo'llab-quvvatlamaydi."); }, "image/png"); }).catch(e => { myAlert("Rasmga olishda xatolik yuz berdi!"); }); }
+        
         function completeCheckout() { const total = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0); processSale(tempType, total); } function printReceipt() { window.print(); }
         
         function processSale(type, total) { 
             if (!SESSION.sales) SESSION.sales = [];
             const p = CART.reduce((a, b) => a + (b.customPrice - (parseFloat(b.buy) || 0)) * b.cartQty, 0); 
             CART.forEach(c => { const x = DB.find(i => i.id === c.id); if (x) x.qty -= c.cartQty; }); 
+            
             if (type === 'nasiya' && tempDebtData) { let d = DEBTS.find(x => x.name.toLowerCase() === tempDebtData.name.toLowerCase()); if (!d) { d = { id: Date.now(), name: tempDebtData.name, phone: tempDebtData.phone, balance: 0, history: [] }; DEBTS.push(d); } d.balance += total; d.history.push({ date: new Date().toLocaleString(), type: 'Nasiya xarid', amount: total, items: [...CART] }); renderDebts(); if (activeClientForSale) { let c = CLIENTS.find(x => x.id === activeClientForSale.id); if (c) c.history.push({ date: new Date().toLocaleString(), total: total, items: [...CART], payType: 'Nasiya' }); } } 
             if (type === 'klient') { let cData = tempClientData || activeClientForSale; if (cData) { let c = CLIENTS.find(x => x.name.toLowerCase() === cData.name.toLowerCase()); if (!c) { c = { id: Date.now(), name: cData.name, phone: cData.phone, day: cData.day || 'dushanba', history: [] }; CLIENTS.push(c); } c.history.push({ date: new Date().toLocaleString(), total: total, items: [...CART], payType: 'Naqd/Plastik' }); } } 
             if ((type === 'naqd' || type === 'plastik') && activeClientForSale) { let c = CLIENTS.find(x => x.id === activeClientForSale.id); if (c) c.history.push({ date: new Date().toLocaleString(), total: total, items: [...CART], payType: type }); } 
             
             SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [...CART], total: total, profit: p, type: type }); 
+            
             CART = []; tempDebtData = null; tempClientData = null; clearActiveClient(); updateCartUI(); 
             
-            // XATOLIK TO'LIQ TUZATILDI: Barcha bog'liq modallar yopiladi
+            // XATOLIK TO'LIQ TUZATILDI: Barcha modallar bir zumda yopiladi!
             document.getElementById('cart-panel').classList.remove('open');
             closeModal('modal-admin-check');
             closeModal('modal-client-create');

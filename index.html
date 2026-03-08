@@ -13,6 +13,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const shopParam = urlParams.get('shop');
             let preSavedPhone = localStorage.getItem('saas_current_phone');
+            
             if (shopParam) {
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('screen-client').classList.add('active');
@@ -21,10 +22,20 @@
                 document.getElementById('screen-admin').classList.add('active');
             }
         });
+
         if ('serviceWorker' in navigator) {
             let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => { if (!refreshing) { refreshing = true; window.location.reload(); } });
-            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(reg => { reg.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { reg.update(); } }); }).catch(e => console.log(e)); });
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
+            });
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    reg.update();
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') { reg.update(); }
+                    });
+                }).catch(err => console.log('SW Xato:', err));
+            });
         }
     </script>
     
@@ -39,29 +50,43 @@
         :root { --blue: #2563eb; --green: #10b981; --red: #ef4444; --orange: #f59e0b; --dark: #1e293b; --bg: #f8fafc; }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         html, body { margin: 0; background: var(--bg); overflow: hidden; position: fixed; width: 100%; height: 100%; overscroll-behavior-y: none; }
+        
         .screen, .tab-content { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 80px; }
         .screen { display: none; animation: fadeIn 0.3s; } 
         .screen.active { display: block; }
         #screen-login.active { display: flex; align-items: center; justify-content: center; background: var(--dark); color: white; }
-        .tab-content { display: none !important; padding: 15px; padding-bottom: 85px; } .tab-content.active-tab { display: block !important; animation: fadeIn 0.3s; }
+        
+        .tab-content { display: none !important; padding: 15px; padding-bottom: 85px; } 
+        .tab-content.active-tab { display: block !important; animation: fadeIn 0.3s; }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition:0.2s;}
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; }
         .btn:active { transform: scale(0.97); }
-        .btn-blue { background: var(--blue); } .btn-green { background: var(--green); } .btn-red { background: var(--red); } .btn-orange { background: var(--orange); } .btn-dark { background: var(--dark); } .btn-outline { background: transparent; border: 2px solid #ddd; color: #555; } .btn-loc { background: #0ea5e9; color: white; }
+        .btn-blue { background: var(--blue); } 
+        .btn-green { background: var(--green); } 
+        .btn-red { background: var(--red); } 
+        .btn-orange { background: var(--orange); } 
+        .btn-dark { background: var(--dark); } 
+        .btn-outline { background: transparent; border: 2px solid #ddd; color: #555; } 
+        .btn-loc { background: #0ea5e9; color: white; }
         
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 16px; outline: none; background: white; }
         .qty-btn { width: 35px; height: 35px; border-radius: 8px; border: none; background: #e2e8f0; font-weight: bold; font-size: 18px; }
         .qty-input { width: 60px; height: 35px; text-align: center; border: 2px solid var(--blue); border-radius: 8px; font-weight: bold; margin: 0; padding: 0; font-size: 16px; }
         .price-input { width: 90px; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: bold; color: var(--blue); }
         .card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; } .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; } 
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .cat-tag { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .cat-card { background: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; } .cat-card i { font-size: 30px; color: var(--blue); margin-bottom: 10px; }
+        .cat-card { background: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; cursor: pointer; } 
+        .cat-card i { font-size: 30px; color: var(--blue); margin-bottom: 10px; }
+        
         .top-bar { position: sticky; top: 0; background: rgba(255,255,255,0.95); padding: 10px 15px; z-index: 100; border-bottom: 1px solid #e2e8f0; backdrop-filter: blur(8px); }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; background: white; display: flex; border-top: 1px solid #eee; z-index: 999; padding-bottom: safe-area-inset-bottom; overflow-x: auto; white-space: nowrap; scrollbar-width: none;}
         .bottom-nav::-webkit-scrollbar { display: none; }
-        .nav-btn { flex: 1; min-width: 55px; background: none; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; position: relative; } .nav-btn.active { color: var(--blue); font-weight: bold; }
+        .nav-btn { flex: 1; min-width: 55px; background: none; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; position: relative; } 
+        .nav-btn.active { color: var(--blue); font-weight: bold; }
         .badge { position: absolute; top: -5px; right: 0; background: var(--red); color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; display: none; z-index: 1002; border: 2px solid white; }
         
         .reg-plan-card { border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; background: white; text-align:left;} 
@@ -70,7 +95,9 @@
         .reg-addon-card.selected { border-color: var(--orange); background: #fffbeb; }
 
         .nav-btn.locked { display: none !important; }
-        .cart-panel { position: fixed; bottom: 65px; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); transform: translateY(120%); transition: transform 0.3s; z-index: 900; display: flex; flex-direction: column; max-height: 85vh; overflow-y: auto; } .cart-panel.open { transform: translateY(0); }
+        
+        .cart-panel { position: fixed; bottom: 65px; left: 0; width: 100%; background: white; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); transform: translateY(120%); transition: transform 0.3s; z-index: 900; display: flex; flex-direction: column; max-height: 85vh; overflow-y: auto; } 
+        .cart-panel.open { transform: translateY(0); }
         .float-btn { position: fixed; bottom: 85px; right: 20px; width: 60px; height: 60px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 25px rgba(37,99,235,0.4); z-index: 800; font-size: 24px; }
         #cart-badge, #client-cart-badge { position: absolute; top: 0; right: 0; background: var(--red); font-size: 12px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; display: none; }
         
@@ -78,7 +105,10 @@
         .modal-box { background: white; width: 92%; max-width: 400px; padding: 20px; border-radius: 20px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; color: var(--dark); } 
         #custom-alert, #custom-confirm { z-index: 100005 !important; }
         
-        .custom-alert-box { text-align: center; } .custom-alert-icon { font-size: 50px; color: var(--blue); margin-bottom: 15px; } .custom-alert-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; } .receipt-style { font-family: 'Courier New', Courier, monospace; background: #fff; padding: 15px; border: 1px dashed #ccc; margin-bottom: 15px; text-align: left; cursor: pointer; color: black; }
+        .custom-alert-box { text-align: center; } 
+        .custom-alert-icon { font-size: 50px; color: var(--blue); margin-bottom: 15px; } 
+        .custom-alert-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; } 
+        .receipt-style { font-family: 'Courier New', Courier, monospace; background: #fff; padding: 15px; border: 1px dashed #ccc; margin-bottom: 15px; text-align: left; cursor: pointer; color: black; }
 
         .client-filter-btn { padding: 8px 12px; border-radius: 20px; border: 1px solid var(--blue); background: white; color: var(--blue); font-size: 12px; white-space: nowrap; cursor: pointer; }
         .client-filter-btn.active { background: var(--blue); color: white; font-weight: bold; }
@@ -102,9 +132,19 @@
         .plan-features li::before { content: '✔️ '; color: var(--green); }
         .addon-card { border: 2px solid #fcd34d; background: #fffbeb; border-radius: 12px; padding: 15px; text-align: left; cursor: pointer; transition: 0.2s; margin-top: 15px; }
         .addon-card.active { border-color: var(--orange); background: #fef3c7; }
+        
         .total-pay-box { background: var(--dark); color: white; padding: 15px; border-radius: 12px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 900; }
         .discount-badge { background: var(--green); color: white; padding: 2px 6px; border-radius: 6px; font-size: 11px; margin-bottom: 5px; display: inline-block; }
         .old-price { text-decoration: line-through; color: #94a3b8; font-size: 14px; margin-right: 8px; }
+
+        .login-box { width: 90%; max-width: 450px; text-align: center; margin:0 auto; }
+        
+        .stat-card { text-align: center; padding: 20px; color: white; border-radius: 16px; margin-bottom: 10px; } 
+        .warehouse-summary { background: linear-gradient(135deg, #0d9488, #14b8a6); color: white; padding: 15px; border-radius: 16px; margin-bottom: 15px; text-align: center; } 
+        .report-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; } 
+        .report-table th { background: #f1f5f9; text-align: left; padding: 8px; border-bottom: 2px solid #ddd; } 
+        .report-table td { padding: 8px; border-bottom: 1px solid #eee; } 
+        .tag-naqd { color: var(--green); font-weight: bold; }
 
         #printable-area { display: none; }
         @media print {
@@ -121,47 +161,47 @@
     <div id="printable-area"></div>
 
     <div id="screen-login" class="screen">
-        <div class="login-box" style="background: white; padding: 20px; border-radius: 20px; color: var(--dark); margin:0 auto; margin-top:5vh;">
-            <h1 style="font-size: 2rem; margin-bottom: 5px; color: var(--dark);">KEENG<span style="color:var(--blue)">MARKET</span></h1>
-            <p style="color: #666; margin-bottom: 20px;">SaaS Savdo Tizimi</p>
+        <div class="login-box">
+            <h1 style="font-size: 2rem; margin-bottom: 5px; color: var(--blue);">KEENG MARKET</h1>
+            <p style="color: #ccc; margin-bottom: 20px;">SaaS Savdo Tizimi</p>
 
-            <div style="display: flex; background: #f1f5f9; border-radius: 12px; margin-bottom: 20px; padding: 5px;">
+            <div style="display: flex; background: rgba(255,255,255,0.1); border-radius: 12px; margin-bottom: 20px; padding: 5px;">
                 <button id="tab-btn-login" class="btn btn-blue" style="margin:0; box-shadow:none;" type="button" onclick="toggleAuthMode('login')">KIRISH</button>
-                <button id="tab-btn-register" class="btn btn-outline" style="margin:0; border:none; color:#666;" type="button" onclick="toggleAuthMode('register')">YANGI DO'KON</button>
+                <button id="tab-btn-register" class="btn btn-outline" style="margin:0; border:none; color:#ccc;" type="button" onclick="toggleAuthMode('register')">YANGI DO'KON</button>
             </div>
 
-            <div id="form-login">
-                <input type="tel" id="login-phone" placeholder="Telefon raqam (901234567)">
-                <input type="password" id="login-pass" placeholder="Parol">
-                <button class="btn btn-blue" onclick="saasLogin()">TIZIMGA KIRISH</button>
-            </div>
+            <form id="form-login" onsubmit="event.preventDefault(); saasLogin();">
+                <input type="tel" id="login-phone" placeholder="Telefon raqam (901234567)" autocomplete="username" required>
+                <input type="password" id="login-pass" placeholder="Parol" autocomplete="current-password" required>
+                <button type="submit" class="btn btn-blue">TIZIMGA KIRISH</button>
+            </form>
 
-            <div id="form-register" style="display: none; text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-                <input type="text" id="reg-name" placeholder="Do'kon nomi (masalan: M-Oil)">
-                <input type="tel" id="reg-phone" placeholder="Telefon raqami (Login uchun)">
-                <input type="password" id="reg-pass" placeholder="Yangi parol o'ylab toping">
+            <form id="form-register" style="display: none; text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 5px;" onsubmit="event.preventDefault(); saasRegister();">
+                <input type="text" id="reg-name" placeholder="Do'kon nomi (masalan: M-Oil)" required>
+                <input type="tel" id="reg-phone" placeholder="Telefon raqami (Login uchun)" autocomplete="username" required>
+                <input type="password" id="reg-pass" placeholder="Yangi parol o'ylab toping" autocomplete="new-password" required>
                 
-                <h4 style="margin: 15px 0 10px 0;">1. Asosiy Tarif:</h4>
-                <div class="reg-plan-card selected" onclick="selectRegTarif('mini', this)"><div class="flex-between"><b>MINI</b><span style="color: var(--blue); font-weight: bold;">70,000 / oy</span></div><small style="color: #666;">Kassa, Ombor, Nasiya</small></div>
-                <div class="reg-plan-card" onclick="selectRegTarif('standart', this)"><div class="flex-between"><b>STANDART</b><span style="color: var(--blue); font-weight: bold;">90,000 / oy</span></div><small style="color: #666;">+ Hisobot bo'limi</small></div>
-                <div class="reg-plan-card" onclick="selectRegTarif('premium', this)"><div class="flex-between"><b>PREMIUM</b><span style="color: var(--blue); font-weight: bold;">140,000 / oy</span></div><small style="color: #666;">+ Rasm, Online Do'kon</small></div>
+                <h4 style="margin: 15px 0 10px 0; color:white;">1. Asosiy Tarif:</h4>
+                <div class="reg-plan-card selected" onclick="selectRegTarif('mini', this)"><div class="flex-between"><b style="color:black">MINI</b><span style="color: var(--blue); font-weight: bold;">70,000 / oy</span></div><small style="color: #666;">Kassa, Ombor, Nasiya</small></div>
+                <div class="reg-plan-card" onclick="selectRegTarif('standart', this)"><div class="flex-between"><b style="color:black">STANDART</b><span style="color: var(--blue); font-weight: bold;">90,000 / oy</span></div><small style="color: #666;">+ Hisobot bo'limi</small></div>
+                <div class="reg-plan-card" onclick="selectRegTarif('premium', this)"><div class="flex-between"><b style="color:black">PREMIUM</b><span style="color: var(--blue); font-weight: bold;">140,000 / oy</span></div><small style="color: #666;">+ Rasm, Online Do'kon</small></div>
                 <input type="hidden" id="selected-tarif" value="mini">
 
-                <h4 style="margin: 15px 0 10px 0;">2. Qo'shimcha Modullar:</h4>
+                <h4 style="margin: 15px 0 10px 0; color:white;">2. Qo'shimcha Modullar:</h4>
                 <div class="reg-addon-card" id="reg-addon-client" onclick="toggleRegAddon('client')">
-                    <div><b>Klient Moduli</b><br><small style="color:#666;">Doimiy mijozlar nazorati</small></div>
+                    <div><b style="color:black">Klient Moduli</b><br><small style="color:#666;">Doimiy mijozlar nazorati</small></div>
                     <div style="text-align:right;"><b style="color:var(--orange);">+10,000 / oy</b><br><i class="far fa-circle" id="icon-reg-client" style="font-size:18px; color:#ccc;"></i></div>
                 </div>
                 <div class="reg-addon-card" id="reg-addon-arenda" onclick="toggleRegAddon('arenda')">
-                    <div><b>Arenda (Ijara)</b><br><small style="color:#666;">Vaqt/Kunlik ijaraga berish</small></div>
+                    <div><b style="color:black">Arenda (Ijara)</b><br><small style="color:#666;">Vaqt/Kunlik ijaraga berish</small></div>
                     <div style="text-align:right;"><b style="color:var(--blue);">+20,000 / oy</b><br><i class="far fa-circle" id="icon-reg-arenda" style="font-size:18px; color:#ccc;"></i></div>
                 </div>
 
-                <button class="btn btn-green" style="margin-top: 15px;" onclick="saasRegister()">RO'YXATDAN O'TISH (+30 Kun Bepul)</button>
-            </div>
+                <button type="submit" class="btn btn-green" style="margin-top: 15px;">RO'YXATDAN O'TISH (+30 Kun Bepul)</button>
+            </form>
             
-            <div style="margin: 20px 0; border-top: 1px dashed #ccc;"></div>
-            <button class="btn btn-outline" onclick="myAlert('Mijozlarga o\'z do\'koningizning Mini App havolasini yuboring (Sozlamalar bo\'limida mavjud).')">MIJOZ (BUYURTMA BERISH)</button>
+            <div style="margin: 20px 0; border-top: 1px dashed #555;"></div>
+            <button class="btn btn-outline" style="color:white; border-color:#555;" type="button" onclick="myAlert('Do\'koningiz havolasini Mijozlarga yuboring (Sozlamalar -> Telegram Mini App qismidan nusxalab oling).')">MIJOZ (BUYURTMA BERISH)</button>
         </div>
     </div>
 
@@ -173,18 +213,11 @@
         </div>
 
         <div id="tab-kassa" class="tab-content active-tab">
-            <div class="top-bar" style="top: auto;">
-                <div class="grid-scan" style="display: flex; gap: 8px;">
-                    <input type="text" id="search-inp" placeholder="Qidirish..." oninput="renderKassa()" style="margin:0;">
-                    <button class="btn btn-dark" style="width: auto; margin:0;" onclick="startScanner('kassa')"><i class="fas fa-barcode"></i></button>
-                </div>
-            </div>
-            
+            <div class="top-bar" style="top: auto;"><div class="grid-scan" style="display: flex; gap: 8px;"><input type="text" id="search-inp" placeholder="Qidirish..." oninput="renderKassa()" style="margin:0;"><button class="btn btn-dark" style="width: auto; margin:0;" onclick="startScanner('kassa')"><i class="fas fa-barcode"></i></button></div></div>
             <div id="active-client-banner" style="display:none; background:var(--blue); color:white; padding:12px; border-radius:12px; margin-top:15px; box-shadow: 0 4px 10px rgba(37,99,235,0.3); align-items:center; justify-content:space-between;">
                 <div><i class="fas fa-user-check"></i> Aktiv klient: <b id="active-client-name">Alisher</b></div>
                 <button onclick="clearActiveClient()" style="background:rgba(255,255,255,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-times"></i></button>
             </div>
-
             <div id="kassa-list" style="margin-top: 15px;"></div>
             <div class="float-btn" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span id="cart-badge">0</span></div>
             <div id="cart-panel" class="cart-panel">
@@ -192,16 +225,8 @@
                 <div id="cart-items" style="overflow-y:auto; flex-grow:1; padding:15px;"></div>
                 <div style="padding: 15px; border-top: 1px solid #eee; background: white;">
                     <div class="flex-between" style="margin-bottom: 10px; font-size: 18px;"><span>Jami:</span><b id="cart-sum-total">0 so'm</b></div>
-                    <div class="grid-2">
-                        <button class="btn btn-green" onclick="showReceiptModal('naqd')">NAQD</button>
-                        <button class="btn btn-blue" onclick="showReceiptModal('plastik')">PLASTIK</button>
-                    </div>
-                    <div class="grid-2">
-                        <button class="btn btn-orange" onclick="openDebtModal()">NASIYA</button>
-                        <button class="btn btn-outline" style="border-color:var(--blue); color:var(--blue); position:relative;" onclick="openClientCheckoutModal()">
-                            KLIENT <i class="fas fa-user-check"></i>
-                        </button>
-                    </div>
+                    <div class="grid-2"><button class="btn btn-green" onclick="showReceiptModal('naqd')">NAQD</button><button class="btn btn-blue" onclick="showReceiptModal('plastik')">PLASTIK</button></div>
+                    <div class="grid-2"><button class="btn btn-orange" onclick="openDebtModal()">NASIYA</button><button class="btn btn-outline" style="border-color:var(--blue); color:var(--blue); position:relative;" onclick="openClientCheckoutModal()">KLIENT <i class="fas fa-user-check"></i></button></div>
                 </div>
             </div>
         </div>
@@ -209,33 +234,18 @@
         <div id="tab-ombor" class="tab-content">
             <div class="card">
                 <h3>Tovar Qo'shish</h3><input type="hidden" id="p-id">
-                
                 <div id="premium-img-section" style="margin-bottom:15px; background:#eff6ff; padding:10px; border-radius:12px; border:1px dashed var(--blue); position:relative; overflow:hidden;">
                     <label style="font-size:12px; color:var(--blue); font-weight:bold;"><i class="fas fa-camera"></i> Tovar Rasmi:</label>
                     <input type="file" id="p-img-input" accept="image/*" onchange="handleImageCompress(event)" style="padding:5px; font-size:12px; margin-bottom:0; margin-top:5px;">
                     <input type="hidden" id="p-img-base64">
                     <img id="p-img-preview" style="max-width:80px; max-height:80px; border-radius:8px; display:none; margin-top:10px;">
-                    
-                    <div id="premium-lock-overlay" style="position:absolute; inset:0; background:rgba(239, 246, 255, 0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; cursor:pointer;" onclick="myAlert('Ushbu funksiya faqat PREMIUM tarifida ishlaydi!')">
-                        <i class="fas fa-lock" style="font-size:24px; color:var(--red); margin-bottom:5px;"></i>
-                        <b style="font-size:12px; color:var(--red);">PREMIUM UCHUN</b>
-                    </div>
+                    <div id="premium-lock-overlay" style="position:absolute; inset:0; background:rgba(239, 246, 255, 0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; cursor:pointer;" onclick="myAlert('Faqat PREMIUM tarifida ishlaydi!')"><i class="fas fa-lock" style="font-size:24px; color:var(--red); margin-bottom:5px;"></i><b style="font-size:12px; color:var(--red);">PREMIUM UCHUN</b></div>
                 </div>
-
                 <div style="display: flex; gap: 5px;"><input type="text" id="p-code" placeholder="Kodlar"><button class="btn btn-dark" style="width: auto; margin-bottom: 10px;" onclick="startScanner('ombor')"><i class="fas fa-barcode"></i></button></div>
                 <input type="text" id="p-cat" placeholder="Kategoriya" list="cat-list"><datalist id="cat-list"></datalist>
                 <input type="text" id="p-name" placeholder="Nomi">
-                
-                <div class="grid-2">
-                    <select id="p-unit"><option value="dona">Dona</option><option value="kg">Kg</option></select>
-                    <div style="display:flex; border:1px solid #cbd5e1; border-radius:12px; margin-bottom:10px; background:white; overflow:hidden;">
-                        <input type="number" id="p-qty" placeholder="Soni" style="border:none; margin:0; border-radius:0; width:100%;">
-                        <button class="btn btn-green" style="margin:0; border-radius:0; width:50px; font-size:18px;" onclick="addQtyFast()"><i class="fas fa-plus"></i></button>
-                    </div>
-                </div>
-                
+                <div class="grid-2"><select id="p-unit"><option value="dona">Dona</option><option value="kg">Kg</option></select><div style="display:flex; border:1px solid #cbd5e1; border-radius:12px; margin-bottom:10px; background:white; overflow:hidden;"><input type="number" id="p-qty" placeholder="Soni" style="border:none; margin:0; border-radius:0; width:100%;"><button class="btn btn-green" style="margin:0; border-radius:0; width:50px; font-size:18px;" onclick="addQtyFast()"><i class="fas fa-plus"></i></button></div></div>
                 <div class="grid-2"><input type="number" id="p-buy" placeholder="Kelish"><input type="number" id="p-sell" placeholder="Sotish"></div>
-                
                 <div class="grid-2"><button class="btn btn-blue" onclick="saveProduct()">SAQLASH</button><button class="btn btn-outline" onclick="clearForm()">TOZALASH</button></div>
                 <button class="btn btn-dark" style="margin-top:10px; background:#475569;" onclick="forceSyncDb()"><i class="fas fa-cloud-upload-alt"></i> BAZAGA UZATISH</button>
             </div>
@@ -250,7 +260,6 @@
 
         <div id="tab-klientlar" class="tab-content">
             <h3>Doimiy Klientlar <i class="fas fa-star" style="color:var(--orange);"></i></h3>
-            
             <div id="client-day-filters" style="display:flex; overflow-x:auto; gap:8px; padding-bottom:10px; margin-bottom:10px;">
                 <button id="filter-btn-barchasi" class="client-filter-btn active" onclick="filterClients('barchasi')">Hamma</button>
                 <button id="filter-btn-dushanba" class="client-filter-btn" onclick="filterClients('dushanba')">Dushanba</button>
@@ -261,7 +270,6 @@
                 <button id="filter-btn-shanba" class="client-filter-btn" onclick="filterClients('shanba')">Shanba</button>
                 <button id="filter-btn-yakshanba" class="client-filter-btn" onclick="filterClients('yakshanba')">Yakshanba</button>
             </div>
-
             <input type="text" id="client-search" placeholder="Ism yoki nomer yozing..." oninput="renderClientsTab()">
             <div id="client-list-container"></div>
         </div>
@@ -273,17 +281,9 @@
 
         <div id="tab-hisobot" class="tab-content">
             <div class="stat-card" style="background: var(--blue);"><small>KUNLIK SOF FOYDA</small><h1 id="stat-profit" style="margin: 5px 0;">0 so'm</h1></div>
-            
-            <div class="grid-2" style="margin-bottom:10px;">
-                <div class="card center"><small>Naqd</small><h3 id="stat-naqd" style="margin:5px 0; color:var(--green);">0</h3></div>
-                <div class="card center"><small>Plastik</small><h3 id="stat-plastik" style="margin:5px 0; color:var(--blue);">0</h3></div>
-            </div>
-            <div class="grid-2" style="margin-bottom:10px;">
-                <div class="card center"><small>Nasiya</small><h3 id="stat-nasiya" style="margin:5px 0; color:var(--orange);">0</h3></div>
-                <div class="card center"><small>Kli. / Ijara</small><h3 id="stat-klient" style="margin:5px 0; color:var(--dark);">0</h3></div>
-            </div>
+            <div class="grid-2" style="margin-bottom:10px;"><div class="card center"><small>Naqd</small><h3 id="stat-naqd" style="margin:5px 0; color:var(--green);">0</h3></div><div class="card center"><small>Plastik</small><h3 id="stat-plastik" style="margin:5px 0; color:var(--blue);">0</h3></div></div>
+            <div class="grid-2" style="margin-bottom:10px;"><div class="card center"><small>Nasiya</small><h3 id="stat-nasiya" style="margin:5px 0; color:var(--orange);">0</h3></div><div class="card center"><small>Kli. / Ijara</small><h3 id="stat-klient" style="margin:5px 0; color:var(--dark);">0</h3></div></div>
             <div class="card center" style="background:#f1f5f9; border: 1px dashed #ccc;"><small>UMUMIY SAVDO JAMI</small><h2 id="stat-total" style="margin:5px 0; color:var(--dark);">0 so'm</h2></div>
-            
             <button class="btn btn-outline" onclick="showTodayDetails()">BUGUNGI SAVDOLAR</button>
             <div class="card"><h3>Kunni Yopish</h3><input type="text" id="close-comment" placeholder="Izoh"><button class="btn btn-red" onclick="closeDay()">KUNNI YOPISH</button></div>
             <div class="grid-2"><button class="btn btn-orange" onclick="closePeriod('week')">HAFTALIK</button><button class="btn btn-dark" onclick="closePeriod('month')">OYLIK</button></div>
@@ -296,9 +296,7 @@
                 <h3 style="margin:0;"><i class="fas fa-stopwatch" style="color:var(--orange);"></i> Ijara (Arenda)</h3>
                 <button class="btn btn-blue small" style="width:auto; margin:0; padding:5px 10px;" onclick="openAddRentItemModal()">+ Yangi Tov</button>
             </div>
-            
             <button class="btn btn-dark" style="margin-bottom:15px; background:#475569;" onclick="forceSyncDb()"><i class="fas fa-cloud-upload-alt"></i> BAZAGA UZATISH</button>
-
             <div class="card" style="background:#fffbeb; border:1px solid #fcd34d;">
                 <h4 style="margin-top:0; color:#b45309;"><i class="fas fa-clock"></i> Ijaradagilar (Aktiv)</h4>
                 <input type="text" id="search-active-rentals" placeholder="Ism, nomer yoki tovar qidirish..." oninput="renderRentalTab()" style="background:white; border-color:#fcd34d;">
@@ -319,19 +317,17 @@
                     <div><small style="color:#94a3b8;">Bu oy</small><div id="mini-stat-month" class="mini-stat-val">0</div><div id="mini-stat-month-trend" style="font-size:11px;">--</div></div>
                 </div>
             </div>
-            
             <div class="card">
                 <h3>Do'kon Sozlamalari</h3><p style="font-size:12px; color:#666;">Bu ma'lumotlar chekda chiqadi</p>
                 <input type="text" id="set-dokon-nomi" placeholder="Do'kon nomi">
                 <input type="tel" id="set-telefon" placeholder="Bog'lanish uchun telefon">
-                <input type="text" id="set-chek-footer" placeholder="Chek tagidagi yozuv (Masalan: Xaridingiz uchun rahmat!)">
-                
+                <input type="text" id="set-chek-footer" placeholder="Chek tagidagi yozuv">
                 <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
                     <h4 style="margin-top:0; color:var(--blue);"><i class="fab fa-telegram"></i> Telegram Mini App</h4>
-                    <p style="font-size:12px; color:#666;">Botga qo'yish yoki mijozlarga tarqatish uchun tayyor ssilka:</p>
+                    <p style="font-size:12px; color:#666;">Mijozlarga yoki botga qo'yish uchun tayyor ssilka:</p>
                     <div style="display:flex; gap:10px; align-items:center;">
                         <input type="text" id="mini-app-link" readonly style="flex-grow:1; background:#f1f5f9; font-size:13px; margin:0; border:1px solid #cbd5e1;" value="">
-                        <button class="btn btn-blue" style="width:auto; margin:0; padding:10px;" onclick="copyBotLink()"><i class="fas fa-copy"></i> Nusxa</button>
+                        <button class="btn btn-blue" style="width:auto; margin:0; padding:10px;" onclick="copyBotLink()"><i class="fas fa-copy"></i></button>
                     </div>
                 </div>
                 <div style="margin-top: 15px;">
@@ -341,12 +337,7 @@
                 </div>
                 <button class="btn btn-green" onclick="saveSozlamalar()">SAQLASH</button>
             </div>
-
-            <div class="card" style="background: #fff; border: 1px solid #ddd;">
-                <h3 style="margin-top:0"><i class="fab fa-bluetooth-b" style="color: var(--blue);"></i> Bluetooth Printer</h3>
-                <button class="btn btn-dark" onclick="connectBluetooth()"><i class="fas fa-search"></i> Qurilma qidirish</button>
-            </div>
-            
+            <div class="card" style="background: #fff; border: 1px solid #ddd;"><h3 style="margin-top:0"><i class="fab fa-bluetooth-b" style="color: var(--blue);"></i> Bluetooth Printer</h3><button class="btn btn-dark" onclick="connectBluetooth()"><i class="fas fa-search"></i> Qurilma qidirish</button></div>
             <button class="btn btn-red" onclick="saasLogout()" style="margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Tizimdan chiqish</button>
         </div>
 
@@ -409,9 +400,24 @@
     
     <div id="modal-finish-rent" class="modal"><div class="modal-box"><h3>Ijarani Yakunlash</h3><div style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;"><b id="finish-rent-client" style="font-size:18px; color:var(--dark);"></b><br><span id="finish-rent-item" style="color:#666; font-size:14px;"></span><br><div style="margin-top:15px; font-size:14px; border-top:1px dashed #ccc; padding-top:10px;">O'tgan vaqt: <b id="finish-rent-time" style="color:var(--orange);"></b></div><div style="margin-top:5px; font-size:22px; font-weight:900;">To'lov: <b id="finish-rent-cost" style="color:var(--green);"></b></div></div><input type="hidden" id="finish-rent-active-id"><div class="grid-2"><button class="btn btn-green" onclick="confirmFinishRental('naqd')">NAQD OLISH</button><button class="btn btn-blue" onclick="confirmFinishRental('plastik')">PLASTIK</button></div><button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal('modal-finish-rent')">BEKOR</button></div></div>
 
-    <div id="custom-alert" class="modal"><div class="modal-box custom-alert-box"><div class="custom-alert-icon"><i class="fas fa-info-circle"></i></div><div id="custom-alert-msg" class="custom-alert-title"></div><button class="btn btn-blue" onclick="closeModal('custom-alert')">Tushunarli</button></div></div>
+    <div id="custom-alert" class="modal">
+        <div class="modal-box custom-alert-box">
+            <div class="custom-alert-icon"><i class="fas fa-info-circle"></i></div>
+            <div id="custom-alert-msg" class="custom-alert-title"></div>
+            <button class="btn btn-blue" onclick="closeModal('custom-alert')">Tushunarli</button>
+        </div>
+    </div>
     
-    <div id="custom-confirm" class="modal"><div class="modal-box custom-alert-box"><div class="custom-alert-icon" style="color:var(--orange)"><i class="fas fa-question-circle"></i></div><div id="custom-confirm-msg" class="custom-alert-title"></div><div class="grid-2"><button id="confirm-yes-btn" class="btn btn-green">HA</button><button class="btn btn-red" onclick="closeModal('custom-confirm')">YO'Q</button></div></div></div>
+    <div id="custom-confirm" class="modal">
+        <div class="modal-box custom-alert-box">
+            <div class="custom-alert-icon" style="color:var(--orange)"><i class="fas fa-question-circle"></i></div>
+            <div id="custom-confirm-msg" class="custom-alert-title"></div>
+            <div class="grid-2">
+                <button id="confirm-yes-btn" class="btn btn-green" onclick="executeConfirm()">HA</button>
+                <button class="btn btn-red" onclick="closeModal('custom-confirm')">YO'Q</button>
+            </div>
+        </div>
+    </div>
     
     <div id="modal-admin-check" class="modal">
         <div class="modal-box">
@@ -485,7 +491,7 @@
     <div id="modal-client-debt" class="modal">
         <div class="modal-box" style="text-align:center; max-height:80vh;">
             <h3>Qarzni tekshirish</h3>
-            <p style="font-size:13px; color:#666;">Do'konga kiritgan ism yoki raqamingizni yozing:</p>
+            <p style="font-size:13px; color:#666;">Do'konga kiritgan ismingizni yoki raqamingizni yozing:</p>
             <input type="text" id="client-debt-check-phone" placeholder="Masalan: Alisher yoki 901234567" style="text-align:center;">
             <button class="btn btn-blue" onclick="fetchMyDebt()">TEKSHIRISH</button>
             <button class="btn btn-outline" onclick="closeModal('modal-client-debt')">YOPISH</button>
@@ -496,7 +502,7 @@
     <div id="modal-client-history-check" class="modal">
         <div class="modal-box" style="text-align:center; max-height:80vh;">
             <h3>Xaridlar tarixi</h3>
-            <p style="font-size:13px; color:#666;">Do'konga kiritgan ism yoki raqamingizni yozing:</p>
+            <p style="font-size:13px; color:#666;">Do'konga kiritgan ismingizni yoki raqamingizni yozing:</p>
             <input type="text" id="client-history-check-phone" placeholder="Masalan: Alisher yoki 901234567" style="text-align:center;">
             <button class="btn btn-blue" onclick="fetchMyClientHistory()">TEKSHIRISH</button>
             <button class="btn btn-outline" onclick="closeModal('modal-client-history-check')">YOPISH</button>
@@ -505,6 +511,7 @@
     </div>
     
     <div id="modal-archive-detail" class="modal"><div class="modal-box" style="height:90vh;"><div class="flex-between"><h3 id="archive-title" style="margin:0">Tafsilotlar</h3><button onclick="closeModal('modal-archive-detail')" style="background:none; border:none; font-size:24px;">×</button></div><div id="archive-detail-content" style="flex-grow:1; overflow-y:auto; margin-top:10px;"></div><button class="btn btn-red" style="margin-top:10px;" onclick="closeModal('modal-archive-detail')">YOPISH</button></div></div>
+    
     <div id="scanner-modal" class="modal" style="background:black;"><div style="width:100%; height:100%; display:flex; flex-direction:column;"><div id="reader" style="width:100%; flex-grow:1;"></div><button class="btn btn-red big-btn" style="margin:20px;" onclick="stopScanner()">YOPISH</button></div></div>
 
     <script>
@@ -520,19 +527,65 @@
         let html5QrCode = null, clientLoc = null, activeClientCat = null, confirmCallback = null, scanLock = false, tempType = null;
         let tempDebtData = null, tempClientData = null; 
         let activeClientForSale = null; let activeClientDayFilter = 'barchasi'; let curClientId = null; 
-        
-        let adminPaySettings = { click_merchant: "", click_service: "", card_number: "8600 **** **** ****", card_name: "Admin" };
-        let selectedBaseTarifPrice = 70000;
-        let isClientAddonSelected = false;
-        let isArendaAddonSelected = false;
 
         const orderSound = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
         let prevOrderCount = -1;
 
+        // BAZA TO'LIB QOTIB QOLMASLIGI VA BO'SHAB QOLGANDA XATO BERMASLIGI UCHUN KUCHLI HIMOYA
+        function ensureSafeData() {
+            if (!SESSION) SESSION = { sales: [], date: new Date().toLocaleDateString() };
+            if (!SESSION.sales) SESSION.sales = [];
+            if (!ARCHIVES) ARCHIVES = { daily: [], weekly: [], monthly: [] };
+            if (!ARCHIVES.daily) ARCHIVES.daily = [];
+            if (!ARCHIVES.weekly) ARCHIVES.weekly = [];
+            if (!ARCHIVES.monthly) ARCHIVES.monthly = [];
+            
+            DB = Array.isArray(DB) ? DB.filter(Boolean) : Object.values(DB || {});
+            DEBTS = Array.isArray(DEBTS) ? DEBTS.filter(Boolean) : Object.values(DEBTS || {});
+            CLIENTS = Array.isArray(CLIENTS) ? CLIENTS.filter(Boolean) : Object.values(CLIENTS || {});
+            ORDERS = Array.isArray(ORDERS) ? ORDERS.filter(Boolean) : Object.values(ORDERS || {});
+            RENTAL_ITEMS = Array.isArray(RENTAL_ITEMS) ? RENTAL_ITEMS.filter(Boolean) : Object.values(RENTAL_ITEMS || {});
+            ACTIVE_RENTALS = Array.isArray(ACTIVE_RENTALS) ? ACTIVE_RENTALS.filter(Boolean) : Object.values(ACTIVE_RENTALS || {});
+            SESSION.sales = Array.isArray(SESSION.sales) ? SESSION.sales.filter(Boolean) : Object.values(SESSION.sales || {});
+            ARCHIVES.daily = Array.isArray(ARCHIVES.daily) ? ARCHIVES.daily.filter(Boolean) : Object.values(ARCHIVES.daily || {});
+            ARCHIVES.weekly = Array.isArray(ARCHIVES.weekly) ? ARCHIVES.weekly.filter(Boolean) : Object.values(ARCHIVES.weekly || {});
+            ARCHIVES.monthly = Array.isArray(ARCHIVES.monthly) ? ARCHIVES.monthly.filter(Boolean) : Object.values(ARCHIVES.monthly || {});
+        }
+
+        function parseDataSafe(d) {
+            DB = d.DB || [];
+            DEBTS = d.DEBTS || []; 
+            CLIENTS = d.CLIENTS || []; 
+            RENTAL_ITEMS = d.RENTAL_ITEMS || []; 
+            ACTIVE_RENTALS = d.ACTIVE_RENTALS || [];
+            ORDERS = d.ORDERS || [];
+            SESSION = d.SESSION || { date: new Date().toLocaleDateString(), sales: [] };
+            let arch = d.ARCHIVES || {};
+            ARCHIVES = { daily: arch.daily || [], weekly: arch.weekly || [], monthly: arch.monthly || [] };
+            ensureSafeData();
+        }
+
+        // MODAL YOPUVCHILAR
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function myConfirm(msg, yesCb) { document.getElementById('custom-confirm-msg').innerText = msg; document.getElementById('custom-confirm').style.display = 'flex'; confirmCallback = yesCb; }
-        document.getElementById('confirm-yes-btn').onclick = function() { if (confirmCallback) confirmCallback(); closeModal('custom-confirm'); };
         function myAlert(msg) { document.getElementById('custom-alert-msg').innerText = msg; document.getElementById('custom-alert').style.display = 'flex'; }
+        
+        // MUHIM TASDIQLASH FUNKSIYASI (HA / YO'Q)
+        function myConfirm(msg, yesCb) { 
+            document.getElementById('custom-confirm-msg').innerText = msg; 
+            document.getElementById('custom-confirm').style.display = 'flex'; 
+            confirmCallback = yesCb; 
+        }
+
+        function executeConfirm() {
+            closeModal('custom-confirm');
+            if (confirmCallback) {
+                let cb = confirmCallback;
+                confirmCallback = null;
+                setTimeout(() => {
+                    try { cb(); } catch(e) { console.error(e); }
+                }, 50);
+            }
+        }
 
         // BAZA UCHUN SSILKANI TO'G'RILASH KODI
         function updateMiniAppLink(phone) {
@@ -553,7 +606,6 @@
                 openClientModeFromUrl(shopParam);
             } else { checkLocalLogin(); }
             
-            // ARENDA TAYMERI UCHUN
             setInterval(() => { if(document.getElementById('tab-arenda').classList.contains('active-tab')) renderRentalTab(); }, 60000);
         };
 
@@ -562,7 +614,10 @@
             document.getElementById('screen-client').classList.add('active');
             db.ref("saas_dokonlar/" + shopId).on("value", snap => {
                 if(snap.exists()) {
-                    const data = snap.val(); DB = data.DB || []; dokonSozlamalar = data.sozlamalar || {};
+                    const data = snap.val(); 
+                    dokonSozlamalar = data.sozlamalar || {};
+                    parseDataSafe(data);
+                    
                     document.getElementById('client-title').innerText = dokonSozlamalar.dokon_nomi || "MARKET";
                     const expDate = new Date(dokonSozlamalar.obuna_tugash_sanasi); const today = new Date();
                     if ((dokonSozlamalar.status === 'bloklangan' || today > expDate) || dokonSozlamalar.tarif !== 'premium') {
@@ -575,6 +630,7 @@
         }
 
         function fetchMyDebt() {
+            ensureSafeData();
             const query = document.getElementById('client-debt-check-phone').value.trim().toLowerCase(); 
             if(!query) return myAlert("Ismingiz yoki raqamingizni kiriting!");
             const urlParams = new URLSearchParams(window.location.search);
@@ -584,7 +640,9 @@
             db.ref("saas_dokonlar/" + destShop + "/DEBTS").once("value", snap => {
                 let resBox = document.getElementById('client-debt-result');
                 if(snap.exists()) {
-                    let myDebt = snap.val().find(d => (d.phone && d.phone.toLowerCase().includes(query)) || (d.name && d.name.toLowerCase().includes(query)));
+                    let val = snap.val();
+                    let debtsArray = Array.isArray(val) ? val.filter(Boolean) : Object.values(val || {});
+                    let myDebt = debtsArray.find(d => (d.phone && d.phone.toLowerCase().includes(query)) || (d.name && d.name.toLowerCase().includes(query)));
                     if(myDebt) {
                         let html = '';
                         if(myDebt.balance > 0) html += `<div style="text-align:center; margin-bottom:15px;"><span style="color:var(--red); font-size:18px;">Hurmatli <b>${myDebt.name}</b>, sizning qarzingiz:<br>${myDebt.balance.toLocaleString()} so'm</span></div>`;
@@ -592,7 +650,8 @@
                         else html += `<div style="text-align:center; margin-bottom:15px;"><span style="color:var(--green);">Hurmatli <b>${myDebt.name}</b>, sizda qarz yo'q ✅</span></div>`;
                         if (myDebt.history && myDebt.history.length > 0) {
                             html += `<div style="background:#f1f5f9; padding:10px; border-radius:10px;"><h4 style="margin-top:0; margin-bottom:10px; color:var(--dark); text-align:center;">Qarz/To'lov tarixi:</h4>`;
-                            myDebt.history.slice().reverse().forEach(h => {
+                            let safeHistory = Array.isArray(myDebt.history) ? myDebt.history.filter(Boolean) : Object.values(myDebt.history);
+                            safeHistory.slice().reverse().forEach(h => {
                                 let color = h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)');
                                 let itemsHtml = (h.items && h.items.length > 0) ? `<div style="font-size:11px; color:#555; margin-top:3px; font-weight:normal;">` + h.items.map(i => `${i.name} x${i.cartQty}`).join(', ') + `</div>` : '';
                                 html += `<div style="border-bottom:1px solid #ddd; padding:8px 0;"><div class="flex-between"><small style="color:#666">${h.date}<br><b style="color:#333">${h.type}</b></small><b style="color:${color}">${h.amount.toLocaleString()}</b></div>${itemsHtml}</div>`;
@@ -605,6 +664,7 @@
         }
 
         function fetchMyClientHistory() {
+            ensureSafeData();
             const query = document.getElementById('client-history-check-phone').value.trim().toLowerCase(); 
             if(!query) return myAlert("Ismingiz yoki raqamingizni kiriting!");
             const urlParams = new URLSearchParams(window.location.search);
@@ -614,12 +674,16 @@
             db.ref("saas_dokonlar/" + destShop + "/CLIENTS").once("value", snap => {
                 let resBox = document.getElementById('client-history-result');
                 if(snap.exists()) {
-                    let myClient = snap.val().find(c => (c.phone && c.phone.toLowerCase().includes(query)) || (c.name && c.name.toLowerCase().includes(query)));
+                    let val = snap.val();
+                    let clientsArray = Array.isArray(val) ? val.filter(Boolean) : Object.values(val || {});
+                    let myClient = clientsArray.find(c => (c.phone && c.phone.toLowerCase().includes(query)) || (c.name && c.name.toLowerCase().includes(query)));
                     if(myClient && myClient.history && myClient.history.length > 0) {
-                        let html = `<div style="text-align:center; margin-bottom:10px;"><b style="color:var(--blue); font-size:16px;">Hurmatli ${myClient.name},<br>Sizning umumiy xaridingiz:<br>${myClient.history.reduce((a,b)=>a+b.total,0).toLocaleString()} so'm</b></div><div style="background:#f1f5f9; padding:10px; border-radius:10px;">`;
-                        myClient.history.slice().reverse().forEach(h => {
-                            let itemsStr = h.items.map(i => `${i.name} x${i.cartQty}`).join(', '); let pType = h.payType ? ` (${h.payType.toUpperCase()})` : '';
-                            html += `<div style="border-bottom:1px solid #ddd; padding:8px 0;"><div class="flex-between" style="margin-bottom:3px;"><small style="color:#666">${h.date}</small><b style="color:var(--green)">${h.total.toLocaleString()} so'm</b></div><div style="font-size:11px; color:#555;">${itemsStr} <b style="color:var(--blue);">${pType}</b></div></div>`;
+                        let html = `<div style="text-align:center; margin-bottom:10px;"><b style="color:var(--blue); font-size:16px;">Hurmatli ${myClient.name},<br>Sizning umumiy xaridingiz:<br>${myClient.history.reduce((a,b)=>a+(b.total||0),0).toLocaleString()} so'm</b></div><div style="background:#f1f5f9; padding:10px; border-radius:10px;">`;
+                        let safeHistory = Array.isArray(myClient.history) ? myClient.history.filter(Boolean) : Object.values(myClient.history);
+                        safeHistory.slice().reverse().forEach(h => {
+                            let itemsStr = h.items && h.items.length ? h.items.map(i => `${i.name} x${i.cartQty}`).join(', ') : ''; 
+                            let pType = h.payType ? ` (${h.payType.toUpperCase()})` : '';
+                            html += `<div style="border-bottom:1px solid #ddd; padding:8px 0;"><div class="flex-between" style="margin-bottom:3px;"><small style="color:#666">${h.date}</small><b style="color:var(--green)">${(h.total||0).toLocaleString()} so'm</b></div><div style="font-size:11px; color:#555;">${itemsStr} <b style="color:var(--blue);">${pType}</b></div></div>`;
                         }); html += `</div>`; resBox.innerHTML = html;
                     } else resBox.innerHTML = "<div style='text-align:center; color:var(--red);'>Sizda xaridlar tarixi yo'q.</div>";
                 } else resBox.innerHTML = "<div style='text-align:center; color:var(--red);'>Topilmadi.</div>";
@@ -630,10 +694,41 @@
 
         function checkLocalLogin() {
             const savedPhone = localStorage.getItem('saas_current_phone');
-            if (savedPhone) { currentUserPhone = savedPhone; loadFromLocal(savedPhone); document.getElementById('screen-login').classList.remove('active'); document.getElementById('screen-admin').classList.add('active'); updateMiniAppLink(savedPhone); applyTariffLocks(); refreshUI(); if (navigator.onLine) { startListeningTenant(currentUserPhone); syncToCloud(); } }
+            if (savedPhone) { 
+                currentUserPhone = savedPhone; 
+                loadFromLocal(savedPhone); 
+                document.getElementById('screen-login').classList.remove('active'); 
+                document.getElementById('screen-admin').classList.add('active'); 
+                updateMiniAppLink(savedPhone); 
+                applyTariffLocks(); 
+                refreshUI(); 
+                if (navigator.onLine) { startListeningTenant(currentUserPhone); syncToCloud(); } 
+            }
         }
-        function loadFromLocal(phone) { const localData = localStorage.getItem('saas_data_' + phone); if (localData) { const d = JSON.parse(localData); dokonSozlamalar = d.sozlamalar || dokonSozlamalar; currentTarif = dokonSozlamalar.tarif; DB = d.DB || []; DEBTS = d.DEBTS || []; CLIENTS = d.CLIENTS || []; RENTAL_ITEMS = d.RENTAL_ITEMS || []; ACTIVE_RENTALS = d.ACTIVE_RENTALS || []; let rawOrders = d.ORDERS || []; ORDERS = Array.isArray(rawOrders) ? rawOrders.filter(Boolean) : Object.values(rawOrders); prevOrderCount = ORDERS.length; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; } }
-        function saveToLocal() { if (!currentUserPhone) return; const dataToSave = { sozlamalar: dokonSozlamalar, DB: DB, DEBTS: DEBTS, CLIENTS: CLIENTS, ORDERS: ORDERS, RENTAL_ITEMS: RENTAL_ITEMS, ACTIVE_RENTALS: ACTIVE_RENTALS, SESSION: SESSION, ARCHIVES: ARCHIVES }; localStorage.setItem('saas_data_' + currentUserPhone, JSON.stringify(dataToSave)); localStorage.setItem('saas_needs_sync', 'true'); }
+        
+        function loadFromLocal(phone) { 
+            const localData = localStorage.getItem('saas_data_' + phone); 
+            if (localData) { 
+                const d = JSON.parse(localData); 
+                dokonSozlamalar = d.sozlamalar || dokonSozlamalar; 
+                currentTarif = dokonSozlamalar.tarif; 
+                parseDataSafe(d);
+                prevOrderCount = ORDERS.length; 
+            } 
+        }
+        
+        function saveToLocal() { 
+            if (!currentUserPhone) return; 
+            ensureSafeData();
+            const dataToSave = { sozlamalar: dokonSozlamalar, DB: DB, DEBTS: DEBTS, CLIENTS: CLIENTS, ORDERS: ORDERS, RENTAL_ITEMS: RENTAL_ITEMS, ACTIVE_RENTALS: ACTIVE_RENTALS, SESSION: SESSION, ARCHIVES: ARCHIVES }; 
+            
+            try {
+                localStorage.setItem('saas_data_' + currentUserPhone, JSON.stringify(dataToSave)); 
+                localStorage.setItem('saas_needs_sync', 'true'); 
+            } catch (e) {
+                console.log("Xotira himoyasi ishladi, asosiy ma'lumot saqlanadi.");
+            }
+        }
         
         function saveToCloud() { 
             if (!currentUserPhone) return; saveToLocal(); 
@@ -654,11 +749,20 @@
 
             db.ref("saas_dokonlar/" + phone).on("value", snap => {
                 if (snap.exists()) {
-                    const d = snap.val(); dokonSozlamalar = d.sozlamalar || dokonSozlamalar; currentTarif = dokonSozlamalar.tarif; applyTariffLocks();
-                    let rawOrders = d.ORDERS || {}; let newOrders = Array.isArray(rawOrders) ? rawOrders.filter(Boolean) : Object.values(rawOrders);
+                    const d = snap.val(); 
+                    dokonSozlamalar = d.sozlamalar || dokonSozlamalar; 
+                    currentTarif = dokonSozlamalar.tarif; 
+                    applyTariffLocks();
+                    
+                    let newOrders = d.ORDERS ? (Array.isArray(d.ORDERS) ? d.ORDERS.filter(Boolean) : Object.values(d.ORDERS)) : [];
                     if (prevOrderCount !== -1 && newOrders.length > prevOrderCount) { orderSound.play().catch(e=>console.log(e)); if(navigator.vibrate) navigator.vibrate([200,100,200]); }
-                    prevOrderCount = newOrders.length; ORDERS = newOrders;
-                    if (localStorage.getItem('saas_needs_sync') !== 'true') { DB = d.DB || []; DEBTS = d.DEBTS || []; CLIENTS = d.CLIENTS || []; RENTAL_ITEMS = d.RENTAL_ITEMS || []; ACTIVE_RENTALS = d.ACTIVE_RENTALS || []; SESSION = d.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = d.ARCHIVES || { daily: [], weekly: [], monthly: [] }; saveToLocal(); }
+                    prevOrderCount = newOrders.length; 
+                    ORDERS = newOrders;
+                    
+                    if (localStorage.getItem('saas_needs_sync') !== 'true') { 
+                        parseDataSafe(d);
+                        saveToLocal(); 
+                    }
                     refreshUI(); 
                 }
             });
@@ -703,7 +807,10 @@
             db.ref("saas_dokonlar/" + phone).once("value", snap => {
                 if(!snap.exists()) return myAlert("Topilmadi!"); const data = snap.val(); if(data.sozlamalar.parol !== pass) return myAlert("Parol xato!"); 
                 currentUserPhone = phone; currentTarif = data.sozlamalar.tarif; localStorage.setItem('saas_current_phone', phone);
-                dokonSozlamalar = data.sozlamalar; DB = data.DB || []; DEBTS = data.DEBTS || []; CLIENTS = data.CLIENTS || []; RENTAL_ITEMS = data.RENTAL_ITEMS || []; ACTIVE_RENTALS = data.ACTIVE_RENTALS || []; let rawOrders = data.ORDERS || {}; ORDERS = Array.isArray(rawOrders) ? rawOrders.filter(Boolean) : Object.values(rawOrders); prevOrderCount = ORDERS.length; SESSION = data.SESSION || { sales: [], date: new Date().toLocaleDateString() }; ARCHIVES = data.ARCHIVES || { daily: [], weekly: [], monthly: [] }; saveToLocal();
+                dokonSozlamalar = data.sozlamalar; 
+                parseDataSafe(data);
+                saveToLocal();
+                
                 document.getElementById('set-dokon-nomi').value = dokonSozlamalar.dokon_nomi || ""; document.getElementById('set-telefon').value = dokonSozlamalar.telefon || ""; document.getElementById('set-chek-footer').value = dokonSozlamalar.chek_footer || ""; document.getElementById('set-tg-token').value = dokonSozlamalar.tg_bot_token || ""; document.getElementById('set-tg-chat').value = dokonSozlamalar.tg_chat_id || "";
                 
                 updateMiniAppLink(phone);
@@ -711,7 +818,13 @@
                 startListeningTenant(phone); document.getElementById('screen-login').classList.remove('active'); document.getElementById('screen-admin').classList.add('active'); applyTariffLocks(); refreshUI();
             });
         }
-        function saasLogout() { myConfirm("Chiqishni xohlaysizmi?", () => { localStorage.removeItem('saas_current_phone'); localStorage.removeItem('saas_data_' + currentUserPhone); location.reload(); }); }
+        
+        function saasLogout() { 
+            myConfirm("Chiqishni xohlaysizmi?", () => { 
+                localStorage.removeItem('saas_current_phone'); 
+                location.reload(); 
+            }); 
+        }
         
         function saveSozlamalar() { 
             db.ref("saas_dokonlar/" + currentUserPhone + "/sozlamalar").update({
@@ -724,6 +837,8 @@
                 myAlert("Sozlamalar saqlandi!");
             });
         }
+
+        async function connectBluetooth() { try { const device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true }); myAlert(device.name + " ulandi! (Chek oynasidagi 'iPrint' orqali chiqaring)"); } catch(e) { myAlert("Bekor qilindi yoki ishlamaydi."); } }
 
         function applyTariffLocks() { 
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('locked')); 
@@ -751,10 +866,11 @@
         }
 
         function switchTab(t, b) {
-            if (currentTarif === 'mini' && (t === 'hisobot' || t === 'online')) return myAlert("Bu tarif mavjud emas. Supportga yozing.");
-            if (currentTarif === 'standart' && t === 'online') return myAlert("Bu tarif mavjud emas. Supportga yozing.");
+            if (currentTarif === 'mini' && (t === 'hisobot' || t === 'online')) return myAlert("Bu tarif mavjud emas.");
+            if (currentTarif === 'standart' && t === 'online') return myAlert("Bu tarif mavjud emas.");
             if (t === 'klientlar' && !dokonSozlamalar.klient_yoqilgan) return myAlert("Bu modul qulflangan!");
             if (t === 'arenda' && !dokonSozlamalar.arenda_yoqilgan) return myAlert("Arenda moduli qulflangan!");
+            
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab')); document.getElementById('tab-' + t).classList.add('active-tab'); document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active')); b.classList.add('active'); 
             if (t === 'hisobot') renderStats(); if (t === 'klientlar') renderClientsTab(); if (t === 'sozlamalar') updateMiniStats(); if (t === 'arenda') renderRentalTab();
         }
@@ -782,6 +898,7 @@
         }
 
         function renderRentalTab() {
+            ensureSafeData();
             let actQuery = document.getElementById('search-active-rentals') ? document.getElementById('search-active-rentals').value.toLowerCase() : "";
             let itemQuery = document.getElementById('search-rental-items') ? document.getElementById('search-rental-items').value.toLowerCase() : "";
 
@@ -824,17 +941,34 @@
         function openStartRentalModal(itemId) { let r = RENTAL_ITEMS.find(x => x.id === itemId); if(!r) return; let t = r.type === 'kun' ? "so'm/kun" : "so'm/soat"; document.getElementById('start-rent-item-name').innerText = r.name + " (" + r.price + " " + t + ")"; document.getElementById('start-rent-item-id').value = itemId; document.getElementById('start-rent-client').value = ''; document.getElementById('start-rent-phone').value = ''; document.getElementById('modal-start-rent').style.display = 'flex'; }
         function confirmStartRental() { let itemId = parseInt(document.getElementById('start-rent-item-id').value); let clientName = document.getElementById('start-rent-client').value.trim(); let phone = document.getElementById('start-rent-phone').value.trim(); if(!clientName) return myAlert("Mijoz ismini yozing!"); let r = RENTAL_ITEMS.find(x => x.id === itemId); if(!r) return; ACTIVE_RENTALS.push({ id: Date.now(), item_id: r.id, item_name: r.name, price: r.price, type: r.type, client_name: clientName, client_phone: phone, start_time: Date.now() }); closeModal('modal-start-rent'); saveToCloud(); renderRentalTab(); }
         function openFinishRentalModal(activeId) { let act = ACTIVE_RENTALS.find(x => x.id === activeId); if(!act) return; let calc = calculateRentalCost(act.start_time, act.price, act.type); document.getElementById('finish-rent-client').innerText = act.client_name; document.getElementById('finish-rent-item').innerText = act.item_name; document.getElementById('finish-rent-time').innerText = calc.timeStr; document.getElementById('finish-rent-cost').innerText = calc.cost.toLocaleString() + " so'm"; document.getElementById('finish-rent-active-id').value = activeId; document.getElementById('modal-finish-rent').style.display = 'flex'; }
+        
         function confirmFinishRental(payType) {
             let activeId = parseInt(document.getElementById('finish-rent-active-id').value); let act = ACTIVE_RENTALS.find(x => x.id === activeId); if(!act) return; let calc = calculateRentalCost(act.start_time, act.price, act.type);
-            if (!SESSION.sales) SESSION.sales = [];
+            ensureSafeData();
             SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [{name: `Arenda: ${act.item_name} (${calc.timeStr})`, cartQty: 1, customPrice: calc.cost}], total: calc.cost, profit: calc.cost, type: payType, note: `Ijara mijozi: ${act.client_name}` });
             ACTIVE_RENTALS = ACTIVE_RENTALS.filter(x => x.id !== activeId); closeModal('modal-finish-rent'); saveToCloud(); renderRentalTab(); renderStats(); myAlert("Yakunlandi va Hisobotga qo'shildi!");
         }
 
-        // QOLGAN FUNKSIYALAR
+        // KASSA VA SOTUV FUNKSIYALARI
         function refreshUI() { if (document.getElementById('screen-admin').classList.contains('active')) { renderKassa(); renderStock(); renderStats(); renderDebts(); renderClientsTab(); updateCartUI(); renderOnlineOrders(); if(document.getElementById('tab-sozlamalar').classList.contains('active-tab')) updateMiniStats(); if(document.getElementById('tab-arenda').classList.contains('active-tab')) renderRentalTab(); } if (document.getElementById('screen-client').classList.contains('active')) { if (activeClientCat) renderClientProducts(activeClientCat); else renderClientCategories(); updateClientCartUI(); } const b = document.getElementById('nav-badge'); const c = ORDERS ? ORDERS.length : 0; if (c > 0) { b.style.display = 'block'; b.innerText = c; } else b.style.display = 'none'; }
-        function renderKassa() { const s = document.getElementById('search-inp').value.toLowerCase(); document.getElementById('kassa-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || p.cat.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).map(p => `<div class="card flex-between" onclick="addToCart(${p.id})"><div><span class="cat-tag">${p.cat}</span><div style="font-weight:bold;">${p.name}</div><small style="color:#666">Ombor: ${p.qty}</small></div><b>${p.sell.toLocaleString()}</b></div>`).join(''); }
-        function addToCart(id) { const p = DB.find(x => x.id === id); if (!p || p.qty <= 0) return myAlert("Tugagan!"); const ex = CART.find(x => x.id === id); if (ex) ex.cartQty++; else CART.push({ ...p, cartQty: 1, customPrice: p.sell }); updateCartUI(); }
+        function renderKassa() { ensureSafeData(); const s = document.getElementById('search-inp').value.toLowerCase(); document.getElementById('kassa-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || p.cat.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).map(p => `<div class="card flex-between" onclick="addToCart(${p.id})"><div><span class="cat-tag">${p.cat}</span><div style="font-weight:bold;">${p.name}</div><small style="color:#666">Ombor: ${p.qty}</small></div><b>${p.sell.toLocaleString()}</b></div>`).join(''); }
+        
+        function addToCart(id) { 
+            const p = DB.find(x => x.id === id); 
+            if (!p || p.qty <= 0) return myAlert("Tugagan!"); 
+            const ex = CART.find(x => x.id === id); 
+            if (ex) ex.cartQty++; 
+            else { 
+                // Xotira to'lmasligi uchun rasm kesib tashlanadi
+                let cartItem = Object.assign({}, p);
+                delete cartItem.img;
+                cartItem.cartQty = 1;
+                cartItem.customPrice = p.sell;
+                CART.push(cartItem); 
+            } 
+            updateCartUI(); 
+        }
+
         function updateCartUI() { let t = 0, q = 0; document.getElementById('cart-items').innerHTML = CART.map((i, idx) => { t += i.cartQty * i.customPrice; q += i.cartQty; return `<div class="cart-item" style="margin-bottom:10px;"><div class="flex-between"><b>${i.name}</b><button style="color:red;border:none;background:none;font-size:18px;" onclick="removeFromCart(${idx})">🗑</button></div><div class="flex-between" style="margin-top:5px;"><div class="cart-controls" style="display:flex;gap:5px;"><button class="qty-btn" onclick="changeQty(${idx},-1)">-</button><input type="number" class="qty-input" value="${i.cartQty}" onchange="updateCartQtyManual(${idx},this.value)"><button class="qty-btn" onclick="changeQty(${idx},1)">+</button></div><input type="number" class="price-input" value="${i.customPrice}" onchange="changePrice(${idx},this.value)"></div></div>`; }).join(''); document.getElementById('cart-sum-total').innerText = t.toLocaleString() + " so'm"; const b = document.getElementById('cart-badge'); if (q > 0) { b.style.display = 'flex'; b.innerText = q; } else b.style.display = 'none'; }
         function changeQty(i, d) { if (d > 0 && CART[i].cartQty >= DB.find(x => x.id == CART[i].id).qty) return myAlert("Yetarli!"); CART[i].cartQty += d; if (CART[i].cartQty <= 0) CART.splice(i, 1); updateCartUI(); } function updateCartQtyManual(i, v) { let q = parseFloat(v); const o = DB.find(x => x.id == CART[i].id); if (q > o.qty) { myAlert("Yetarli!"); q = o.qty; } if (q <= 0) { myConfirm("O'chirasizmi?", () => { CART.splice(i, 1); updateCartUI(); }); } else { CART[i].cartQty = q; updateCartUI(); } } function changePrice(i, v) { CART[i].customPrice = parseFloat(v) || 0; updateCartUI(); } function removeFromCart(i) { CART.splice(i, 1); updateCartUI(); } function toggleCart() { document.getElementById('cart-panel').classList.toggle('open'); }
         
@@ -849,7 +983,7 @@
         function completeCheckout() { const total = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0); processSale(tempType, total); } function printReceipt() { window.print(); }
         
         function processSale(type, total) { 
-            if (!SESSION.sales) SESSION.sales = [];
+            ensureSafeData();
             const p = CART.reduce((a, b) => a + (b.customPrice - (parseFloat(b.buy) || 0)) * b.cartQty, 0); 
             CART.forEach(c => { const x = DB.find(i => i.id === c.id); if (x) x.qty -= c.cartQty; }); 
             if (type === 'nasiya' && tempDebtData) { let d = DEBTS.find(x => x.name.toLowerCase() === tempDebtData.name.toLowerCase()); if (!d) { d = { id: Date.now(), name: tempDebtData.name, phone: tempDebtData.phone, balance: 0, history: [] }; DEBTS.push(d); } d.balance += total; d.history.push({ date: new Date().toLocaleString(), type: 'Nasiya xarid', amount: total, items: [...CART] }); renderDebts(); if (activeClientForSale) { let c = CLIENTS.find(x => x.id === activeClientForSale.id); if (c) c.history.push({ date: new Date().toLocaleString(), total: total, items: [...CART], payType: 'Nasiya' }); } } 
@@ -857,6 +991,7 @@
             if ((type === 'naqd' || type === 'plastik') && activeClientForSale) { let c = CLIENTS.find(x => x.id === activeClientForSale.id); if (c) c.history.push({ date: new Date().toLocaleString(), total: total, items: [...CART], payType: type }); } 
             
             SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [...CART], total: total, profit: p, type: type }); 
+            
             CART = []; tempDebtData = null; tempClientData = null; clearActiveClient(); updateCartUI(); 
             
             document.getElementById('cart-panel').classList.remove('open');
@@ -869,34 +1004,115 @@
         function handleImageCompress(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = function(event) { const img = new Image(); img.src = event.target.result; img.onload = function() { const canvas = document.createElement('canvas'); const MAX_SIZE = 300; let w = img.width, h = img.height; if (w > h) { if (w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } } else { if (h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; } } canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h); const b64 = canvas.toDataURL('image/webp', 0.6); document.getElementById('p-img-base64').value = b64; document.getElementById('p-img-preview').src = b64; document.getElementById('p-img-preview').style.display = 'block'; } } }
         function addQtyFast() { let cur = parseFloat(document.getElementById('p-qty').value) || 0; let add = prompt(`Mavjud qoldiq: ${cur}\nQo'shiladigan miqdorni kiriting:`, ""); if(add && !isNaN(add)) { document.getElementById('p-qty').value = cur + parseFloat(add); } }
         function saveProduct() { const n = document.getElementById('p-name').value; const s = parseFloat(document.getElementById('p-sell').value); const id = document.getElementById('p-id').value; if (!n || !s) return myAlert("Xato!"); const img64 = document.getElementById('p-img-base64').value; const i = { id: id ? parseInt(id) : Date.now(), code: document.getElementById('p-code').value, cat: document.getElementById('p-cat').value || 'Boshqa', name: n, unit: document.getElementById('p-unit').value, qty: parseFloat(document.getElementById('p-qty').value) || 0, buy: parseFloat(document.getElementById('p-buy').value) || 0, sell: s, img: img64 }; if (id) DB[DB.findIndex(x => x.id == id)] = i; else DB.push(i); clearForm(); renderStock(); saveToCloud(); } 
-        function deleteP(id) { myConfirm("Rostdan ham bu tovarni o'chirasizmi?", () => { DB = DB.filter(x => x.id != id); renderStock(); saveToCloud(); myAlert("Tovar o'chirildi!"); }); }
-        function renderStock() { const s = document.getElementById('stock-search').value.toLowerCase(); const b = DB.reduce((a, x) => a + x.qty * (parseFloat(x.buy) || 0), 0); const sl = DB.reduce((a, x) => a + x.qty * (parseFloat(x.sell) || 0), 0); document.getElementById('stock-summary-container').innerHTML = `<div class="warehouse-summary"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div><small>KELISH KAPI</small><h2>${b.toLocaleString()}</h2></div><div style="border-left:1px solid #fff3"><small>SOTUV KAPI</small><h2>${sl.toLocaleString()}</h2></div></div></div>`; document.getElementById('stock-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).sort((x, y) => { if (x.qty <= 0 && y.qty > 0) return -1; if (x.qty > 0 && y.qty <= 0) return 1; return y.id - x.id; }).map(p => { const isOut = p.qty <= 0; const style = isOut ? 'background: #fee2e2; border: 1px solid #ef4444;' : ''; const qtyText = isOut ? '<b style="color:#ef4444">TUGAGAN (0)</b>' : `${p.qty} ${p.unit}`; return `<div class="card flex-between" style="${style}"><div><span class="cat-tag">${p.cat}</span><div><b>${p.name}</b></div><small>${qtyText}</small></div><div style="display:flex; gap:5px;"><button class="btn btn-blue small" style="width:auto; margin:0;" onclick="editP(${p.id})">✎</button><button class="btn btn-red small" style="width:auto; margin:0;" onclick="deleteP(${p.id})"><i class="fas fa-trash"></i></button></div></div>`; }).join(''); document.getElementById('cat-list').innerHTML = [...new Set(DB.map(p => p.cat))].map(c => `<option value="${c}">`).join(''); } 
+        function deleteP(id) { myConfirm("Rostdan ham bu tovarni o'chirasizmi?", () => { ensureSafeData(); DB = DB.filter(x => x.id != id); renderStock(); saveToCloud(); myAlert("Tovar o'chirildi!"); }); }
+        function renderStock() { ensureSafeData(); const s = document.getElementById('stock-search').value.toLowerCase(); const b = DB.reduce((a, x) => a + x.qty * (parseFloat(x.buy) || 0), 0); const sl = DB.reduce((a, x) => a + x.qty * (parseFloat(x.sell) || 0), 0); document.getElementById('stock-summary-container').innerHTML = `<div class="warehouse-summary"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div><small>KELISH KAPI</small><h2>${b.toLocaleString()}</h2></div><div style="border-left:1px solid #fff3"><small>SOTUV KAPI</small><h2>${sl.toLocaleString()}</h2></div></div></div>`; document.getElementById('stock-list').innerHTML = DB.filter(p => { const codes = p.code ? p.code.split(',').map(c => c.trim().toLowerCase()) : []; return p.name.toLowerCase().includes(s) || codes.some(c => c.includes(s)); }).sort((x, y) => { if (x.qty <= 0 && y.qty > 0) return -1; if (x.qty > 0 && y.qty <= 0) return 1; return y.id - x.id; }).map(p => { const isOut = p.qty <= 0; const style = isOut ? 'background: #fee2e2; border: 1px solid #ef4444;' : ''; const qtyText = isOut ? '<b style="color:#ef4444">TUGAGAN (0)</b>' : `${p.qty} ${p.unit}`; return `<div class="card flex-between" style="${style}"><div><span class="cat-tag">${p.cat}</span><div><b>${p.name}</b></div><small>${qtyText}</small></div><div style="display:flex; gap:5px;"><button class="btn btn-blue small" style="width:auto; margin:0;" onclick="editP(${p.id})">✎</button><button class="btn btn-red small" style="width:auto; margin:0;" onclick="deleteP(${p.id})"><i class="fas fa-trash"></i></button></div></div>`; }).join(''); document.getElementById('cat-list').innerHTML = [...new Set(DB.map(p => p.cat))].map(c => `<option value="${c}">`).join(''); } 
         function editP(id) { const p = DB.find(x => x.id == id); Object.keys(p).forEach(k => { if (document.getElementById('p-' + k)) document.getElementById('p-' + k).value = p[k]; }); if(p.img) { document.getElementById('p-img-base64').value = p.img; document.getElementById('p-img-preview').src = p.img; document.getElementById('p-img-preview').style.display = 'block'; } else { document.getElementById('p-img-base64').value = ''; document.getElementById('p-img-preview').style.display = 'none'; document.getElementById('p-img-preview').src = ''; } window.scrollTo(0, 0); } 
         function clearForm() { document.querySelectorAll('#tab-ombor input').forEach(i => { if(i.type !== 'file') i.value = ''; }); document.getElementById('p-img-base64').value = ''; document.getElementById('p-img-preview').style.display = 'none'; document.getElementById('p-img-preview').src = ''; document.getElementById('p-img-input').value = ''; document.getElementById('p-id').value = ''; }
-        function renderOnlineOrders() { const c = ORDERS ? ORDERS.length : 0; document.getElementById('online-count-title').innerText = c; document.getElementById('online-orders-list').innerHTML = ORDERS.map(o => { let m = o.loc ? `<a href="https://www.google.com/maps?q=${o.loc.lat},${o.loc.lng}" target="_blank" class="btn btn-outline" style="margin-top:5px; text-decoration:none;">📍 Joylashuv</a>` : ''; return `<div class="card"><div class="flex-between"><b>${o.client}</b><small>${o.date}</small></div><div><a href="tel:${o.phone}">${o.phone}</a></div><div style="border-top:1px solid #eee; margin:5px 0; padding:5px 0; font-size:13px;">${o.items.map(i => `${i.name} x${i.qty}`).join('<br>')}</div><div class="flex-between"><b>Jami: ${o.total.toLocaleString()}</b></div>${m}<div class="grid-2" style="margin-top:10px;"><button class="btn btn-green small" onclick="acceptOrder(${o.id})">QABUL</button><button class="btn btn-red small" onclick="rejectOrder(${o.id})">BEKOR</button></div></div>`; }).join(''); } 
-        function acceptOrder(id) { myConfirm("Qabul?", () => { const o = ORDERS.find(x => x.id === id); if(!o) return; o.items.forEach(i => { const p = DB.find(x => x.id === i.id); if (p) p.qty -= i.qty; }); const pr = o.items.reduce((a, b) => a + (b.sell - (parseFloat(b.buy) || 0)) * b.qty, 0); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: o.items, total: o.total, profit: pr, type: 'naqd', note: `Online: ${o.client}` }); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove().then(() => { saveToCloud(); }); }); } 
-        function rejectOrder(id) { myConfirm("O'chirasizmi?", () => { db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove(); }); }
+        function renderOnlineOrders() { ensureSafeData(); const c = ORDERS ? ORDERS.length : 0; document.getElementById('online-count-title').innerText = c; document.getElementById('online-orders-list').innerHTML = ORDERS.map(o => { let m = o.loc ? `<a href="https://www.google.com/maps?q=${o.loc.lat},${o.loc.lng}" target="_blank" class="btn btn-outline" style="margin-top:5px; text-decoration:none;">📍 Joylashuv</a>` : ''; return `<div class="card"><div class="flex-between"><b>${o.client}</b><small>${o.date}</small></div><div><a href="tel:${o.phone}">${o.phone}</a></div><div style="border-top:1px solid #eee; margin:5px 0; padding:5px 0; font-size:13px;">${o.items.map(i => `${i.name} x${i.qty}`).join('<br>')}</div><div class="flex-between"><b>Jami: ${o.total.toLocaleString()}</b></div>${m}<div class="grid-2" style="margin-top:10px;"><button class="btn btn-green small" onclick="acceptOrder(${o.id})">QABUL</button><button class="btn btn-red small" onclick="rejectOrder(${o.id})">BEKOR</button></div></div>`; }).join(''); } 
+        function acceptOrder(id) { myConfirm("Qabul?", () => { ensureSafeData(); const o = ORDERS.find(x => x.id === id); if(!o) return; o.items.forEach(i => { const p = DB.find(x => x.id === i.id); if (p) p.qty -= i.qty; }); const pr = o.items.reduce((a, b) => a + (b.sell - (parseFloat(b.buy) || 0)) * b.qty, 0); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: o.items, total: o.total, profit: pr, type: 'naqd', note: `Online: ${o.client}` }); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove().then(() => { saveToCloud(); renderOnlineOrders(); }); }); } 
+        function rejectOrder(id) { myConfirm("O'chirasizmi?", () => { ensureSafeData(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/ORD_" + id).remove(); db.ref("saas_dokonlar/" + currentUserPhone + "/ORDERS/" + id).remove(); ORDERS = ORDERS.filter(x => x.id !== id); renderOnlineOrders(); }); }
         function openDebtModal() { if (!CART.length) return myAlert("Savat bo'sh!"); if (activeClientForSale) { document.getElementById('debt-customer-name').value = activeClientForSale.name; document.getElementById('debt-customer-phone').value = activeClientForSale.phone || ''; } else { document.getElementById('debt-customer-name').value = ''; document.getElementById('debt-customer-phone').value = ''; } document.getElementById('debt-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-debt-create').style.display = 'flex'; } 
         function confirmDebt() { const n = document.getElementById('debt-customer-name').value; const ph = document.getElementById('debt-customer-phone').value; if (!n) return myAlert("Ism kerak!"); tempDebtData = { name: n, phone: ph }; closeModal('modal-debt-create'); showReceiptModal('nasiya'); } 
-        function renderDebts() { const s = document.getElementById('debt-search').value.toLowerCase(); document.getElementById('debt-list').innerHTML = DEBTS.filter(d => (d.name.toLowerCase().includes(s) || (d.phone && d.phone.includes(s))) && d.balance !== 0).map(d => { let balText = d.balance > 0 ? `<b style="color:var(--red)">Qarz: ${d.balance.toLocaleString()}</b>` : `<b style="color:var(--green)">Haqdor: ${Math.abs(d.balance).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showDebtInfo(${d.id})"><div><b>${d.name}</b><br><small>${d.phone || ''}</small></div>${balText}</div>`; }).join(''); document.getElementById('total-debt-sum').innerText = DEBTS.filter(d => d.balance > 0).reduce((a, b) => a + b.balance, 0).toLocaleString() + " so'm"; } 
+        function renderDebts() { ensureSafeData(); const s = document.getElementById('debt-search').value.toLowerCase(); document.getElementById('debt-list').innerHTML = DEBTS.filter(d => (d.name.toLowerCase().includes(s) || (d.phone && d.phone.includes(s))) && d.balance !== 0).map(d => { let balText = d.balance > 0 ? `<b style="color:var(--red)">Qarz: ${d.balance.toLocaleString()}</b>` : `<b style="color:var(--green)">Haqdor: ${Math.abs(d.balance).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showDebtInfo(${d.id})"><div><b>${d.name}</b><br><small>${d.phone || ''}</small></div>${balText}</div>`; }).join(''); document.getElementById('total-debt-sum').innerText = DEBTS.filter(d => d.balance > 0).reduce((a, b) => a + b.balance, 0).toLocaleString() + " so'm"; } 
         function showDebtInfo(id) { curDebtId = id; const d = DEBTS.find(x => x.id == id); document.getElementById('debt-info-name').innerText = d.name; const balEl = document.getElementById('debt-info-balance'); if (d.balance > 0) { balEl.innerText = "Qarz: " + d.balance.toLocaleString(); balEl.style.color = "var(--red)"; } else { balEl.innerText = "Haqdor: " + Math.abs(d.balance).toLocaleString(); balEl.style.color = "var(--green)"; } document.getElementById('debt-history-list').innerHTML = d.history.slice().reverse().map(h => `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0;"><div>${h.date}<br><small>${h.type}</small></div><b style="color:${h.type === 'Pul olindi' ? 'green' : (h.type === 'Nasiya xarid' ? 'red' : 'var(--orange)')}">${h.amount.toLocaleString()}</b></div>`).join(''); document.getElementById('modal-debt-info').style.display = 'flex'; } 
         function shareDebt() { const d = DEBTS.find(x => x.id == curDebtId); if(!d) return; let msg = `Sizning "${dokonSozlamalar.dokon_nomi || 'Do\'kon'}"dagi holatingiz:\n\n👤 Mijoz: ${d.name}\n💰 Qoldiq: ${d.balance > 0 ? "Sizdan qarz: " + d.balance.toLocaleString() : "Do'kondan haqingiz: " + Math.abs(d.balance).toLocaleString()} so'm\n\nOxirgi operatsiya: ${d.history.length > 0 ? d.history[d.history.length-1].date : '-'}\n\nHavola orqali batafsil tekshiring: ${window.location.origin + window.location.pathname}?shop=${currentUserPhone}`; if(navigator.share) { navigator.share({title: 'Qarz ma\'lumoti', text: msg}).catch(e=>{}); } else { myAlert("Ulashish imkoni yo'q (brauzer qo'llab-quvvatlamaydi)"); } }
         function payDebt(type) { const a = parseFloat(document.getElementById('debt-pay-amount').value); if (!a || a <= 0) return myAlert("Xato summa!"); const d = DEBTS.find(x => x.id == curDebtId); if (type === 'kirim') { d.balance -= a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul olindi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: a, profit: 0, type: 'naqd', note: 'Qarz uzildi: ' + d.name }); } else { d.balance += a; d.history.push({ date: new Date().toLocaleString(), type: 'Pul berildi', amount: a, items: [] }); SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [], total: -a, profit: 0, type: 'naqd', note: 'Haqdorga berildi: ' + d.name }); } document.getElementById('debt-pay-amount').value = ''; closeModal('modal-debt-info'); saveToCloud(); renderStats(); renderDebts(); myAlert("Saqlandi!"); }
         
         function filterClients(day) { activeClientDayFilter = day; document.querySelectorAll('.client-filter-btn').forEach(b => b.classList.remove('active')); document.getElementById('filter-btn-' + day).classList.add('active'); renderClientsTab(); }
-        function openClientCheckoutModal() { if (!dokonSozlamalar.klient_yoqilgan) return myAlert("Bu modul qulflangan! 🔒\nOylik to'lovga +10,000 so'm qo'shib faollashtirish uchun Adminga yozing."); if (!CART.length) return myAlert("Savat bo'sh!"); if (activeClientForSale) { tempClientData = { name: activeClientForSale.name, phone: activeClientForSale.phone, day: activeClientForSale.day }; showReceiptModal('klient'); return; } document.getElementById('client-customer-day').value = ['yakshanba','dushanba','seshanba','chorshanba','payshanba','juma','shanba'][new Date().getDay()]; document.getElementById('client-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-client-create').style.display = 'flex'; }
+        function openClientCheckoutModal() { if (!dokonSozlamalar.klient_yoqilgan) return myAlert("Bu modul qulflangan!"); if (!CART.length) return myAlert("Savat bo'sh!"); if (activeClientForSale) { tempClientData = { name: activeClientForSale.name, phone: activeClientForSale.phone, day: activeClientForSale.day }; showReceiptModal('klient'); return; } document.getElementById('client-customer-day').value = ['yakshanba','dushanba','seshanba','chorshanba','payshanba','juma','shanba'][new Date().getDay()]; document.getElementById('client-modal-total').innerText = CART.reduce((a, b) => a + b.cartQty * b.customPrice, 0).toLocaleString(); document.getElementById('modal-client-create').style.display = 'flex'; }
         function confirmClientCheckout() { const n = document.getElementById('client-customer-name').value; const ph = document.getElementById('client-customer-phone').value; const day = document.getElementById('client-customer-day').value; if (!n) return myAlert("Klient ismi kerak!"); tempClientData = { name: n, phone: ph, day: day }; closeModal('modal-client-create'); showReceiptModal('klient'); }
-        function renderClientsTab() { const s = document.getElementById('client-search').value.toLowerCase(); const container = document.getElementById('client-list-container'); if(!container) return; let filtered = CLIENTS.filter(c => c.name.toLowerCase().includes(s) || (c.phone && c.phone.includes(s))); if (activeClientDayFilter !== 'barchasi') { filtered = filtered.filter(c => (c.day || 'dushanba') === activeClientDayFilter); } container.innerHTML = filtered.map(c => { let t = c.history.reduce((a, b) => a + b.total, 0); return `<div class="card flex-between" onclick="showClientInfo(${c.id})"><div><b>${c.name}</b><br><small>${c.phone || ''}</small></div><b style="color:var(--blue)">${t.toLocaleString()} so'm</b></div>`; }).join(''); }
-        function showClientInfo(id) { curClientId = id; const c = CLIENTS.find(x => x.id == id); document.getElementById('client-info-name').innerText = c.name; document.getElementById('info-client-day').value = c.day || 'dushanba'; document.getElementById('client-history-list').innerHTML = c.history.slice().reverse().map(h => { let itemsStr = h.items.map(i => `${i.name} x${i.cartQty}`).join('<br>'); let pType = h.payType ? ` (${h.payType})` : ''; return `<div style="border-bottom:1px solid #ddd; padding:10px 0;"><div class="flex-between" style="margin-bottom:5px;"><small>${h.date}</small><b style="color:var(--green);">${h.total.toLocaleString()} so'm</b></div><div style="font-size:12px; color:#555;">${itemsStr} <b style="color:var(--blue)">${pType}</b></div></div>`; }).join(''); document.getElementById('modal-client-info').style.display = 'flex'; }
+        function renderClientsTab() { ensureSafeData(); const s = document.getElementById('client-search').value.toLowerCase(); const container = document.getElementById('client-list-container'); if(!container) return; let filtered = CLIENTS.filter(c => c.name.toLowerCase().includes(s) || (c.phone && c.phone.includes(s))); if (activeClientDayFilter !== 'barchasi') { filtered = filtered.filter(c => (c.day || 'dushanba') === activeClientDayFilter); } container.innerHTML = filtered.map(c => { let t = c.history.reduce((a, b) => a + (b.total||0), 0); return `<div class="card flex-between" onclick="showClientInfo(${c.id})"><div><b>${c.name}</b><br><small>${c.phone || ''}</small></div><b style="color:var(--blue)">${t.toLocaleString()} so'm</b></div>`; }).join(''); }
+        function showClientInfo(id) { curClientId = id; const c = CLIENTS.find(x => x.id == id); document.getElementById('client-info-name').innerText = c.name; document.getElementById('info-client-day').value = c.day || 'dushanba'; document.getElementById('client-history-list').innerHTML = c.history.slice().reverse().map(h => { let itemsStr = h.items && h.items.length ? h.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : ""; let pType = h.payType ? ` (${h.payType})` : ''; return `<div style="border-bottom:1px solid #ddd; padding:10px 0;"><div class="flex-between" style="margin-bottom:5px;"><small>${h.date}</small><b style="color:var(--green);">${(h.total||0).toLocaleString()} so'm</b></div><div style="font-size:12px; color:#555;">${itemsStr} <b style="color:var(--blue)">${pType}</b></div></div>`; }).join(''); document.getElementById('modal-client-info').style.display = 'flex'; }
         function updateClientDay(day) { if(!curClientId) return; const c = CLIENTS.find(x => x.id == curClientId); if(c) { c.day = day; saveToCloud(); renderClientsTab(); myAlert("Mijoz kuni o'zgartirildi!"); } }
         function startClientSale() { if(!curClientId) return; activeClientForSale = CLIENTS.find(x => x.id == curClientId); document.getElementById('active-client-name').innerText = activeClientForSale.name; document.getElementById('active-client-banner').style.display = 'flex'; closeModal('modal-client-info'); switchTab('kassa', document.querySelector('.bottom-nav button')); }
         function clearActiveClient() { activeClientForSale = null; document.getElementById('active-client-banner').style.display = 'none'; }
-        function renderStats() { if (!SESSION.sales) SESSION.sales = []; document.getElementById('stat-naqd').innerText = SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-plastik').innerText = SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-nasiya').innerText = SESSION.sales.filter(x => x.type == 'nasiya').reduce((a, b) => a + b.total, 0).toLocaleString(); document.getElementById('stat-klient').innerText = SESSION.sales.filter(x => x.type == 'klient' || x.type === 'naqd' && x.note?.includes('Ijara') || x.type === 'plastik' && x.note?.includes('Ijara')).reduce((a, b) => a + b.total, 0).toLocaleString(); let umJami = SESSION.sales.reduce((a, b) => a + b.total, 0); document.getElementById('stat-total').innerText = umJami.toLocaleString() + " so'm"; document.getElementById('stat-profit').innerText = SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; } 
-        function closeDay() { myConfirm("Yopasizmi?", () => { const r = { date: new Date().toLocaleString(), totalNaqd: SESSION.sales.filter(x => x.type == 'naqd').reduce((a, b) => a + b.total, 0), totalPlastik: SESSION.sales.filter(x => x.type == 'plastik').reduce((a, b) => a + b.total, 0), totalNasiya: SESSION.sales.filter(x => x.type == 'nasiya').reduce((a, b) => a + b.total, 0), totalKlient: SESSION.sales.filter(x => x.type == 'klient').reduce((a, b) => a + b.total, 0), totalSum: SESSION.sales.reduce((a, b) => a + b.total, 0), profit: SESSION.sales.reduce((a, b) => a + (b.profit || 0), 0), details: JSON.parse(JSON.stringify(SESSION.sales)), comment: document.getElementById('close-comment').value }; if (!ARCHIVES.daily) ARCHIVES.daily = []; ARCHIVES.daily.push(r); SESSION.sales = []; SESSION.date = new Date().toLocaleDateString(); saveToCloud(); renderStats(); myAlert("Kun yopildi!"); }); } function closePeriod(t) { myConfirm("Saqlaysizmi?", () => { const r = { date: new Date().toLocaleString(), type: t, summaryProfit: (ARCHIVES.daily || []).slice(-7).reduce((a, b) => a + b.profit, 0) }; if (!ARCHIVES[t == 'week' ? 'weekly' : 'monthly']) ARCHIVES[t == 'week' ? 'weekly' : 'monthly'] = []; ARCHIVES[t == 'week' ? 'weekly' : 'monthly'].push(r); saveToCloud(); myAlert("Saqlandi!"); }); } function renderArchive(t) { const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = t === 'day' ? (i.totalSum || ((i.totalNaqd||0) + (i.totalPlastik||0) + (i.totalNasiya||0) + (i.totalKlient||0))) : 0; let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } function buildAndShowTable(ti, tr, isT=false) { document.getElementById('archive-title').innerText = ti; if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; [...tr].reverse().forEach(s => { let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${s.total.toLocaleString()}</b><br><span class="tag-${s.type}">${s.type.toUpperCase()}</span></td>${b}</tr>`; }); h += `</tbody></table>`; document.getElementById('archive-detail-content').innerHTML = h; document.getElementById('modal-archive-detail').style.display = 'flex'; } function returnSale(id) { myConfirm("Vozvrat?", () => { const idx = SESSION.sales.findIndex(s => s.id === id); if (idx === -1) return; const s = SESSION.sales[idx]; if (s.items) s.items.forEach(i => { const d = DB.find(x => x.id === i.id); if (d) d.qty += i.cartQty; }); SESSION.sales.splice(idx, 1); saveToCloud(); refreshUI(); closeModal('modal-archive-detail'); myAlert("Vozvrat qilindi!"); }); }
+        
+        function renderStats() { 
+            ensureSafeData();
+            let s = SESSION.sales;
+            document.getElementById('stat-naqd').innerText = s.filter(x => x && x.type == 'naqd').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
+            document.getElementById('stat-plastik').innerText = s.filter(x => x && x.type == 'plastik').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
+            document.getElementById('stat-nasiya').innerText = s.filter(x => x && x.type == 'nasiya').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
+            document.getElementById('stat-klient').innerText = s.filter(x => x && (x.type == 'klient' || (x.note && x.note.includes('Ijara')))).reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
+            let umJami = s.reduce((a, b) => a + (b.total||0), 0); 
+            document.getElementById('stat-total').innerText = umJami.toLocaleString() + " so'm"; 
+            document.getElementById('stat-profit').innerText = s.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; 
+        } 
+        
+        // ================= KUN VA DAVR YOPISH KODI =================
+        function closeDay() { 
+            myConfirm("Kunni yopmoqchimisiz?", () => { 
+                ensureSafeData(); 
+                let s = SESSION.sales;
+                const r = { 
+                    date: new Date().toLocaleString(), 
+                    totalNaqd: s.filter(x => x && x.type == 'naqd').reduce((a, b) => a + (b.total||0), 0), 
+                    totalPlastik: s.filter(x => x && x.type == 'plastik').reduce((a, b) => a + (b.total||0), 0), 
+                    totalNasiya: s.filter(x => x && x.type == 'nasiya').reduce((a, b) => a + (b.total||0), 0), 
+                    totalKlient: s.filter(x => x && (x.type == 'klient' || (x.note && x.note.includes('Ijara')))).reduce((a, b) => a + (b.total||0), 0), 
+                    totalSum: s.reduce((a, b) => a + (b.total||0), 0), 
+                    profit: s.reduce((a, b) => a + (b.profit || 0), 0), 
+                    details: JSON.parse(JSON.stringify(s)), 
+                    comment: document.getElementById('close-comment') ? document.getElementById('close-comment').value : ""
+                }; 
+                ARCHIVES.daily.push(r); 
+                SESSION.sales = []; 
+                SESSION.date = new Date().toLocaleDateString(); 
+                saveToCloud(); 
+                renderStats(); 
+                renderArchive('day'); 
+                if(document.getElementById('close-comment')) document.getElementById('close-comment').value = '';
+                myAlert("Kun yopildi va arxivga saqlandi!"); 
+            }); 
+        } 
+        
+        function closePeriod(t) { 
+            myConfirm("Davrni arxivga saqlaysizmi?", () => { 
+                ensureSafeData();
+                const r = { date: new Date().toLocaleString(), type: t, summaryProfit: ARCHIVES.daily.slice(-7).reduce((a, b) => a + (b.profit||0), 0) }; 
+                if (t == 'week') ARCHIVES.weekly.push(r); else ARCHIVES.monthly.push(r);
+                saveToCloud(); 
+                renderArchive(t);
+                myAlert("Saqlandi!"); 
+            }); 
+        } 
+        
+        function renderArchive(t) { ensureSafeData(); const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = t === 'day' ? (i.totalSum || ((i.totalNaqd||0) + (i.totalPlastik||0) + (i.totalNasiya||0) + (i.totalKlient||0))) : 0; let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } 
+        function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } 
+        function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } 
+        
+        function buildAndShowTable(ti, tr, isT=false) { 
+            document.getElementById('archive-title').innerText = ti; 
+            if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } 
+            let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; 
+            [...tr].reverse().forEach(s => { 
+                if(!s) return;
+                let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); 
+                let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; 
+                h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${(s.total||0).toLocaleString()}</b><br><span class="tag-${s.type}">${(s.type||"").toUpperCase()}</span></td>${b}</tr>`; 
+            }); 
+            h += `</tbody></table>`; 
+            document.getElementById('archive-detail-content').innerHTML = h; 
+            document.getElementById('modal-archive-detail').style.display = 'flex'; 
+        } 
+        
+        function returnSale(id) { 
+            myConfirm("Vozvrat qilasizmi?", () => { 
+                ensureSafeData();
+                const idx = SESSION.sales.findIndex(s => s && s.id === id); 
+                if (idx === -1) return; 
+                const s = SESSION.sales[idx]; 
+                if (s.items) s.items.forEach(i => { const d = DB.find(x => x.id === i.id); if (d) d.qty += i.cartQty; }); 
+                SESSION.sales.splice(idx, 1); 
+                saveToCloud(); refreshUI(); closeModal('modal-archive-detail'); myAlert("Vozvrat qilindi!"); 
+            }); 
+        }
+        
         function renderClientCategories() { activeClientCat = null; document.getElementById('client-title').innerText = "KATEGORIYALAR"; document.getElementById('client-back-btn').style.display = 'none'; const c = [...new Set(DB.map(p => p.cat))]; document.getElementById('client-view-container').innerHTML = c.map(x => `<div class="cat-card" onclick="renderClientProducts('${x}')"><i class="fas fa-folder"></i><b>${x}</b></div>`).join(''); } 
         function renderClientProducts(cat) { activeClientCat = cat; document.getElementById('client-title').innerText = cat; document.getElementById('client-back-btn').style.display = 'block'; document.getElementById('client-view-container').innerHTML = DB.filter(p => p.cat === cat).map(p => { let imgHtml = p.img ? `<img src="${p.img}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:8px; border: 1px solid #eee;">` : `<div style="width:100%; height:130px; background:#f1f5f9; border-radius:10px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><i class="fas fa-image" style="font-size:30px;"></i></div>`; return `<div class="card" style="padding:10px; display:flex; flex-direction:column; justify-content:space-between; margin-bottom:0;"><div>${imgHtml}<div style="line-height:1.2; margin-bottom:8px;"><b style="font-size:13px; display:block; margin-bottom:4px;">${p.name}</b><span style="color:var(--blue); font-weight:900; font-size:14px;">${p.sell.toLocaleString()} so'm</span></div></div>${p.qty > 0 ? `<button class="btn btn-green" style="margin:0; padding:8px; font-size:12px; border-radius:8px;" onclick="addToClientCart(${p.id})">Savatga <i class="fas fa-plus"></i></button>` : `<div style="color:var(--red); font-weight:bold; text-align:center; font-size:12px; padding:5px 0;">Tugagan</div>`}</div>`; }).join(''); } 
-        function addToClientCart(id) { const p = DB.find(x => x.id === id); const ex = clientCart.find(x => x.id === id); if (ex) ex.qty++; else clientCart.push({ ...p, qty: 1 }); updateClientCartUI(); } function updateClientCartUI() { const b = document.getElementById('client-cart-badge'); const q = clientCart.length; if (q > 0) { b.style.display = 'flex'; b.innerText = q; } else b.style.display = 'none'; let t = 0; document.getElementById('client-cart-items').innerHTML = clientCart.map((c, i) => { t += c.qty * c.sell; return `<div class="card flex-between" style="padding:10px; margin-bottom:5px;"><div><b>${c.name}</b><br>${c.sell}</div><div style="display:flex; align-items:center; gap:10px;"><button class="qty-btn" onclick="changeClientQty(${i},-1)">-</button><input type="number" class="qty-input" value="${c.qty}" onchange="updateClientQtyManual(${i},this.value)"><button class="qty-btn" onclick="changeClientQty(${i},1)">+</button></div></div>`; }).join(''); document.getElementById('client-cart-total').innerText = t.toLocaleString() + " so'm"; } function changeClientQty(i, d) { clientCart[i].qty += d; if (clientCart[i].qty <= 0) clientCart.splice(i, 1); updateClientCartUI(); } function updateClientQtyManual(i, v) { let q = parseFloat(v); if (q <= 0) clientCart.splice(i, 1); else clientCart[i].qty = q; updateClientCartUI(); } function toggleClientCart() { document.getElementById('client-cart-panel').classList.toggle('open'); } function getLocation() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(p => { clientLoc = { lat: p.coords.latitude, lng: p.coords.longitude }; document.getElementById('loc-status').style.display = 'block'; }, () => myAlert("Ruxsat bering!")); } else myAlert("Ishlamaydi"); }
+        function addToClientCart(id) { const p = DB.find(x => x.id === id); const ex = clientCart.find(x => x.id === id); if (ex) ex.qty++; else { let item = {...p, qty: 1}; delete item.img; clientCart.push(item); } updateClientCartUI(); } function updateClientCartUI() { const b = document.getElementById('client-cart-badge'); const q = clientCart.length; if (q > 0) { b.style.display = 'flex'; b.innerText = q; } else b.style.display = 'none'; let t = 0; document.getElementById('client-cart-items').innerHTML = clientCart.map((c, i) => { t += c.qty * c.sell; return `<div class="card flex-between" style="padding:10px; margin-bottom:5px;"><div><b>${c.name}</b><br>${c.sell}</div><div style="display:flex; align-items:center; gap:10px;"><button class="qty-btn" onclick="changeClientQty(${i},-1)">-</button><input type="number" class="qty-input" value="${c.qty}" onchange="updateClientQtyManual(${i},this.value)"><button class="qty-btn" onclick="changeClientQty(${i},1)">+</button></div></div>`; }).join(''); document.getElementById('client-cart-total').innerText = t.toLocaleString() + " so'm"; } function changeClientQty(i, d) { clientCart[i].qty += d; if (clientCart[i].qty <= 0) clientCart.splice(i, 1); updateClientCartUI(); } function updateClientQtyManual(i, v) { let q = parseFloat(v); if (q <= 0) clientCart.splice(i, 1); else clientCart[i].qty = q; updateClientCartUI(); } function toggleClientCart() { document.getElementById('client-cart-panel').classList.toggle('open'); } function getLocation() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(p => { clientLoc = { lat: p.coords.latitude, lng: p.coords.longitude }; document.getElementById('loc-status').style.display = 'block'; }, () => myAlert("Ruxsat bering!")); } else myAlert("Ishlamaydi"); }
         function submitOrderFinal() { const cName = document.getElementById('client-name').value; const cPhone = document.getElementById('client-phone').value; const totalSum = clientCart.reduce((a, b) => a + b.qty * b.sell, 0); if (!cName || !cPhone) return myAlert("Ism va Telefon kiriting!"); if (clientCart.length === 0) return myAlert("Savat bo'sh!"); const o = { id: Date.now(), client: cName, phone: cPhone, items: [...clientCart], total: totalSum, date: new Date().toLocaleString(), loc: clientLoc }; let destShop = shopParam ? shopParam : currentUserPhone; if(destShop) { db.ref("saas_dokonlar/" + destShop + "/ORDERS/ORD_" + o.id).set(o).then(() => { if (dokonSozlamalar.tg_bot_token && dokonSozlamalar.tg_chat_id) { let msg = `🛒 <b>YANGI ONLINE BUYURTMA!</b>\n\n👤 Mijoz: <b>${cName}</b>\n📞 Tel: +${cPhone}\n\n🛍 <b>Buyurtma ro'yxati:</b>\n`; clientCart.forEach(c => { msg += `▫️ ${c.name} x${c.qty} = ${(c.qty * c.sell).toLocaleString()} so'm\n`; }); msg += `\n💰 <b>JAMI SUMMA: ${totalSum.toLocaleString()} so'm</b>`; if (clientLoc) msg += `\n\n📍 <a href="https://maps.google.com/?q=$${clientLoc.lat},${clientLoc.lng}">Xaritada ko'rish</a>`; fetch(`https://api.telegram.org/bot${dokonSozlamalar.tg_bot_token}/sendMessage`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ chat_id: dokonSozlamalar.tg_chat_id, text: msg, parse_mode: 'HTML' }) }).catch(e => console.log(e)); } clientCart = []; clientLoc = null; document.getElementById('client-name').value = ''; document.getElementById('client-phone').value = ''; document.getElementById('loc-status').style.display = 'none'; updateClientCartUI(); closeModal('modal-client-check'); toggleClientCart(); myAlert("Buyurtma muvaffaqiyatli yuborildi! ✅\nSotuvchi tez orada bog'lanadi."); }); } }
+        
         function startScanner(m) { document.getElementById('scanner-modal').style.display = 'flex'; if (html5QrCode) { try { html5QrCode.stop().then(() => { html5QrCode.clear(); }); } catch (e) {} } html5QrCode = new Html5Qrcode("reader"); scanLock = false; html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (d) => { if (scanLock) return; scanLock = true; if (m === 'ombor') { stopScanner(); document.getElementById('p-code').value = d; } else { const p = DB.find(x => { const codes = x.code ? x.code.split(',').map(c => c.trim().toLowerCase()) : []; return codes.includes(d.toLowerCase()); }); if (p) addToCart(p.id); else myAlert("Topilmadi!"); setTimeout(() => { scanLock = false; }, 1500); } }, (e) => {}).catch(e => console.log(e)); } function stopScanner() { if (html5QrCode) html5QrCode.stop().then(() => { html5QrCode.clear(); document.getElementById('scanner-modal').style.display = 'none'; }).catch(() => { document.getElementById('scanner-modal').style.display = 'none'; }); else document.getElementById('scanner-modal').style.display = 'none'; }
     </script>
 </body>

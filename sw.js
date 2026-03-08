@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keeng-saas-cache-v22'; // HAR SAFAR KOD O'ZGARSA, SHU RAQAMNI OSHIRING!
+const CACHE_NAME = 'keeng-saas-cache-v23'; // HAR SAFAR KOD O'ZGARSA, SHU RAQAMNI OSHIRING!
 
 const urlsToCache = [
     './',

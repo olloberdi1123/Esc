@@ -161,16 +161,16 @@
                 <button id="tab-btn-register" class="btn btn-outline" style="margin:0; border:none; color:#ccc;" type="button" onclick="toggleAuthMode('register')">YANGI DO'KON</button>
             </div>
 
-            <div id="form-login">
-                <input type="tel" id="login-phone" placeholder="Telefon raqam (901234567)">
-                <input type="password" id="login-pass" placeholder="Parol">
-                <button class="btn btn-blue" onclick="saasLogin()">TIZIMGA KIRISH</button>
-            </div>
+            <form id="form-login" onsubmit="event.preventDefault(); saasLogin();">
+                <input type="tel" id="login-phone" placeholder="Telefon raqam (901234567)" autocomplete="username" required>
+                <input type="password" id="login-pass" placeholder="Parol" autocomplete="current-password" required>
+                <button type="submit" class="btn btn-blue">TIZIMGA KIRISH</button>
+            </form>
 
-            <div id="form-register" style="display: none; text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-                <input type="text" id="reg-name" placeholder="Do'kon nomi (masalan: M-Oil)">
-                <input type="tel" id="reg-phone" placeholder="Telefon raqami (Login uchun)">
-                <input type="password" id="reg-pass" placeholder="Yangi parol o'ylab toping">
+            <form id="form-register" style="display: none; text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 5px;" onsubmit="event.preventDefault(); saasRegister();">
+                <input type="text" id="reg-name" placeholder="Do'kon nomi (masalan: M-Oil)" required>
+                <input type="tel" id="reg-phone" placeholder="Telefon raqami (Login uchun)" autocomplete="username" required>
+                <input type="password" id="reg-pass" placeholder="Yangi parol o'ylab toping" autocomplete="new-password" required>
                 
                 <h4 style="margin: 15px 0 10px 0; color:white;">1. Asosiy Tarif:</h4>
                 <div class="reg-plan-card selected" onclick="selectTarif('mini', this)"><div class="flex-between"><b style="color:black">MINI</b><span style="color: var(--blue); font-weight: bold;">70,000 / oy</span></div><small style="color: #666;">Kassa, Ombor, Nasiya</small></div>
@@ -188,8 +188,8 @@
                     <div style="text-align:right;"><b style="color:var(--blue);">+20,000 / oy</b><br><i class="far fa-circle" id="icon-reg-arenda" style="font-size:18px; color:#ccc;"></i></div>
                 </div>
 
-                <button class="btn btn-green" style="margin-top: 15px;" onclick="saasRegister()">RO'YXATDAN O'TISH</button>
-            </div>
+                <button type="submit" class="btn btn-green" style="margin-top: 15px;">RO'YXATDAN O'TISH</button>
+            </form>
             
             <div style="margin: 20px 0; border-top: 1px dashed #555;"></div>
             <button class="btn btn-outline" style="color:white; border-color:#555;" type="button" onclick="myAlert('Do\'koningiz havolasini Mijozlarga yuboring (Sozlamalar -> Telegram Mini App qismidan nusxalab oling).')">MIJOZ (BUYURTMA BERISH)</button>
@@ -401,7 +401,34 @@
     
     <div id="modal-start-rent" class="modal"><div class="modal-box"><h3>Ijaraga Berish</h3><b id="start-rent-item-name" style="color:var(--blue); margin-bottom:10px; display:block; font-size:18px;"></b><input type="hidden" id="start-rent-item-id"><input type="text" id="start-rent-client" placeholder="Mijoz ismi"><input type="tel" id="start-rent-phone" placeholder="Telefon raqami (ixtiyoriy)"><button class="btn btn-green" onclick="confirmStartRental()"><i class="fas fa-play"></i> VAQTNI BOSHLASH</button><button class="btn btn-red" onclick="closeModal('modal-start-rent')">BEKOR</button></div></div>
     
-    <div id="modal-finish-rent" class="modal"><div class="modal-box"><h3>Ijarani Yakunlash</h3><div style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;"><b id="finish-rent-client" style="font-size:18px; color:var(--dark);"></b><br><span id="finish-rent-item" style="color:#666; font-size:14px;"></span><br><div style="margin-top:15px; font-size:14px; border-top:1px dashed #ccc; padding-top:10px;">O'tgan vaqt: <b id="finish-rent-time" style="color:var(--orange);"></b></div><div style="margin-top:5px; font-size:22px; font-weight:900;">To'lov: <b id="finish-rent-cost" style="color:var(--green);"></b></div></div><input type="hidden" id="finish-rent-active-id"><div class="grid-2"><button class="btn btn-green" onclick="confirmFinishRental('naqd')">NAQD OLISH</button><button class="btn btn-blue" onclick="confirmFinishRental('plastik')">PLASTIK</button></div><button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal('modal-finish-rent')">BEKOR</button></div></div>
+    <div id="modal-finish-rent" class="modal">
+        <div class="modal-box">
+            <h3>Ijarani Yakunlash</h3>
+            <div style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:15px;">
+                <b id="finish-rent-client" style="font-size:18px; color:var(--dark);"></b><br>
+                <span id="finish-rent-item" style="color:#666; font-size:14px;"></span><br>
+                <div style="margin-top:15px; font-size:14px; border-top:1px dashed #ccc; padding-top:10px;">
+                    O'tgan vaqt: <b id="finish-rent-time" style="color:var(--orange);"></b>
+                </div>
+                
+                <div style="margin-top:15px;">
+                    <label style="font-size:12px; color:#666; font-weight:bold;">Yakuniy to'lov (Skidka qilsangiz o'zgartiring):</label>
+                    <input type="number" id="finish-rent-cost-input" style="font-size:22px; font-weight:900; color:var(--green); width:100%; margin-top:5px; padding:10px; border:2px solid var(--green); border-radius:8px; background:white; text-align:center;">
+                </div>
+            </div>
+            
+            <input type="hidden" id="finish-rent-active-id">
+            
+            <div class="grid-2">
+                <button class="btn btn-green" onclick="confirmFinishRental('naqd')">NAQD OLISH</button>
+                <button class="btn btn-blue" onclick="confirmFinishRental('plastik')">PLASTIK</button>
+            </div>
+            
+            <button class="btn btn-orange" style="margin-top:10px;" onclick="confirmFinishRental('nasiya')">NASIYA (QARZGA YOZISH)</button>
+            
+            <button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal('modal-finish-rent')">BEKOR QILISH</button>
+        </div>
+    </div>
 
     <div id="custom-alert" class="modal">
         <div class="modal-box custom-alert-box">
@@ -518,7 +545,6 @@
     <div id="scanner-modal" class="modal" style="background:black;"><div style="width:100%; height:100%; display:flex; flex-direction:column;"><div id="reader" style="width:100%; flex-grow:1;"></div><button class="btn btn-red big-btn" style="margin:20px;" onclick="stopScanner()">YOPISH</button></div></div>
 
     <script>
-        // SCRIPT BOSHLANISHI
         const firebaseConfig = { apiKey: "AIzaSyA8F47YRcEPTIwyI7AjSeqXIyddFpz8orU", authDomain: "keeng-market.firebaseapp.com", databaseURL: "https://keeng-market-default-rtdb.firebaseio.com", projectId: "keeng-market", storageBucket: "keeng-market.firebasestorage.app", messagingSenderId: "688523074873", appId: "1:688523074873:web:016b69f98a238bd19d5ce8" };
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
 
@@ -562,19 +588,11 @@
             ensureSafeData();
         }
 
-        function openMyDebtModal() { 
-            document.getElementById('client-debt-result').innerHTML = ''; 
-            document.getElementById('client-debt-check-phone').value = ''; 
-            document.getElementById('modal-client-debt').style.display = 'flex'; 
-        }
-        
-        function openMyHistoryModal() { 
-            document.getElementById('client-history-result').innerHTML = ''; 
-            document.getElementById('client-history-check-phone').value = ''; 
-            document.getElementById('modal-client-history-check').style.display = 'flex'; 
-        }
+        function openMyDebtModal() { document.getElementById('client-debt-result').innerHTML = ''; document.getElementById('client-debt-check-phone').value = ''; document.getElementById('modal-client-debt').style.display = 'flex'; }
+        function openMyHistoryModal() { document.getElementById('client-history-result').innerHTML = ''; document.getElementById('client-history-check-phone').value = ''; document.getElementById('modal-client-history-check').style.display = 'flex'; }
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function myAlert(msg) { document.getElementById('custom-alert-msg').innerText = msg; document.getElementById('custom-alert').style.display = 'flex'; }
         
         function myConfirm(msg, yesCb) { 
             document.getElementById('custom-confirm-msg').innerText = msg; 
@@ -587,13 +605,8 @@
             if (confirmCallback) {
                 let cb = confirmCallback;
                 confirmCallback = null;
-                setTimeout(() => { try { cb(); } catch(e) { console.error(e); myAlert("Xatolik yuz berdi. Sahifani yangilang."); } }, 50);
+                setTimeout(() => { try { cb(); } catch(e) { console.error(e); } }, 50);
             }
-        }
-
-        function myAlert(msg) { 
-            document.getElementById('custom-alert-msg').innerText = msg; 
-            document.getElementById('custom-alert').style.display = 'flex'; 
         }
 
         function updateMiniAppLink(phone) {
@@ -626,7 +639,6 @@
             if (screenAdmin && screenAdmin.classList.contains('active') &&
                 tabKassa && tabKassa.classList.contains('active-tab')) {
                 
-                // Agar qidiruv oynasida bo'lsa, global ishlashni to'xtatib, inputni o'ziga qo'yib beradi.
                 if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
 
                 if (e.key === 'Enter') {
@@ -637,11 +649,8 @@
                             const codes = x.code ? x.code.split(',').map(c => c.trim().toLowerCase()) : [];
                             return codes.includes(code);
                         });
-                        if (p) {
-                            addToCart(p.id);
-                        } else {
-                            myAlert("Shtrix-kod topilmadi!");
-                        }
+                        if (p) addToCart(p.id);
+                        else myAlert("Shtrix-kod topilmadi!");
                     }
                     barcodeString = '';
                     return;
@@ -655,7 +664,6 @@
             }
         });
 
-        // INPUT ICHIDAN QIDIRUV (AVTOMAT TOZALANADI)
         function handleSearchScan(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -812,6 +820,7 @@
                     const d = snap.val(); 
                     dokonSozlamalar = d.sozlamalar || dokonSozlamalar; 
                     currentTarif = dokonSozlamalar.tarif; 
+                    applyTariffLocks();
                     
                     const expDate = new Date(dokonSozlamalar.obuna_tugash_sanasi); const today = new Date();
                     if (dokonSozlamalar.status === 'bloklangan' || today > expDate) { 
@@ -819,8 +828,6 @@
                     } else { 
                         document.getElementById('modal-expired').style.display = 'none'; 
                     }
-                    
-                    applyTariffLocks();
                     
                     let newOrders = d.ORDERS ? (Array.isArray(d.ORDERS) ? d.ORDERS.filter(Boolean) : Object.values(d.ORDERS)) : [];
                     if (prevOrderCount !== -1 && newOrders.length > prevOrderCount) { orderSound.play().catch(e=>console.log(e)); if(navigator.vibrate) navigator.vibrate([200,100,200]); }
@@ -836,27 +843,8 @@
             });
         }
 
-        function toggleAuthMode(mode) { 
-            if(mode === 'login') { 
-                document.getElementById('form-login').style.display = 'block'; 
-                document.getElementById('form-register').style.display = 'none'; 
-                document.getElementById('tab-btn-login').className = 'btn btn-blue'; 
-                document.getElementById('tab-btn-register').className = 'btn btn-outline'; 
-                document.getElementById('tab-btn-register').style.border = 'none'; 
-            } else { 
-                document.getElementById('form-login').style.display = 'none'; 
-                document.getElementById('form-register').style.display = 'block'; 
-                document.getElementById('tab-btn-register').className = 'btn btn-blue'; 
-                document.getElementById('tab-btn-login').className = 'btn btn-outline'; 
-                document.getElementById('tab-btn-login').style.border = 'none'; 
-            } 
-        }
-        
-        function selectTarif(tarif, el) { 
-            document.querySelectorAll('.reg-plan-card').forEach(c => c.classList.remove('selected')); 
-            el.classList.add('selected'); 
-            document.getElementById('selected-tarif').value = tarif; 
-        }
+        function toggleAuthMode(mode) { if(mode === 'login') { document.getElementById('form-login').style.display = 'block'; document.getElementById('form-register').style.display = 'none'; document.getElementById('tab-btn-login').className = 'btn btn-blue'; document.getElementById('tab-btn-register').className = 'btn btn-outline'; document.getElementById('tab-btn-register').style.border = 'none'; } else { document.getElementById('form-login').style.display = 'none'; document.getElementById('form-register').style.display = 'block'; document.getElementById('tab-btn-register').className = 'btn btn-blue'; document.getElementById('tab-btn-login').className = 'btn btn-outline'; document.getElementById('tab-btn-login').style.border = 'none'; } }
+        function selectTarif(tarif, el) { document.querySelectorAll('.reg-plan-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); document.getElementById('selected-tarif').value = tarif; }
         
         function toggleRegAddon(type) {
             const card = document.getElementById('reg-addon-' + type);
@@ -975,6 +963,7 @@
             if (t === 'arenda') renderRentalTab();
         }
 
+        // ================= ARENDA FUNKSIYALARI =================
         function openAddRentItemModal() { document.getElementById('rent-name').value = ''; document.getElementById('rent-price').value = ''; document.getElementById('rent-qty').value = ''; document.getElementById('modal-add-rent').style.display = 'flex'; }
         function saveRentItem() { const name = document.getElementById('rent-name').value; const type = document.getElementById('rent-type').value; const price = parseInt(document.getElementById('rent-price').value); const qty = parseInt(document.getElementById('rent-qty').value); if(!name || !price || !qty) return myAlert("Hammasini to'ldiring!"); RENTAL_ITEMS.push({ id: Date.now(), name: name, type: type, price: price, total_qty: qty }); closeModal('modal-add-rent'); saveToCloud(); renderRentalTab(); myAlert("Ijara tovari qo'shildi!"); }
         function deleteRentItem(id) { myConfirm("Rostdan o'chirasizmi?", () => { RENTAL_ITEMS = RENTAL_ITEMS.filter(x => x.id !== id); saveToCloud(); renderRentalTab(); }); }
@@ -1037,14 +1026,72 @@
         }
 
         function cancelActiveRental(id) { myConfirm("Rostdan ham bu ijarani bekor qilasizmi? (Pul hisoblanmaydi)", () => { ACTIVE_RENTALS = ACTIVE_RENTALS.filter(x => x.id !== id); saveToCloud(); renderRentalTab(); myAlert("Ijara bekor qilindi!"); }); }
+        
         function openStartRentalModal(itemId) { let r = RENTAL_ITEMS.find(x => x.id === itemId); if(!r) return; let t = r.type === 'kun' ? "so'm/kun" : "so'm/soat"; document.getElementById('start-rent-item-name').innerText = r.name + " (" + r.price + " " + t + ")"; document.getElementById('start-rent-item-id').value = itemId; document.getElementById('start-rent-client').value = ''; document.getElementById('start-rent-phone').value = ''; document.getElementById('modal-start-rent').style.display = 'flex'; }
         function confirmStartRental() { let itemId = parseInt(document.getElementById('start-rent-item-id').value); let clientName = document.getElementById('start-rent-client').value.trim(); let phone = document.getElementById('start-rent-phone').value.trim(); if(!clientName) return myAlert("Mijoz ismini yozing!"); let r = RENTAL_ITEMS.find(x => x.id === itemId); if(!r) return; ACTIVE_RENTALS.push({ id: Date.now(), item_id: r.id, item_name: r.name, price: r.price, type: r.type, client_name: clientName, client_phone: phone, start_time: Date.now() }); closeModal('modal-start-rent'); saveToCloud(); renderRentalTab(); }
-        function openFinishRentalModal(activeId) { let act = ACTIVE_RENTALS.find(x => x.id === activeId); if(!act) return; let calc = calculateRentalCost(act.start_time, act.price, act.type); document.getElementById('finish-rent-client').innerText = act.client_name; document.getElementById('finish-rent-item').innerText = act.item_name; document.getElementById('finish-rent-time').innerText = calc.timeStr; document.getElementById('finish-rent-cost').innerText = calc.cost.toLocaleString() + " so'm"; document.getElementById('finish-rent-active-id').value = activeId; document.getElementById('modal-finish-rent').style.display = 'flex'; }
+        
+        // YAKUNLASH MODALINI OCHISH VA NARXNI QO'YISH (SKIDKA UCHUN)
+        function openFinishRentalModal(activeId) { 
+            let act = ACTIVE_RENTALS.find(x => x.id === activeId); 
+            if(!act) return; 
+            let calc = calculateRentalCost(act.start_time, act.price, act.type); 
+            document.getElementById('finish-rent-client').innerText = act.client_name; 
+            document.getElementById('finish-rent-item').innerText = act.item_name; 
+            document.getElementById('finish-rent-time').innerText = calc.timeStr; 
+            
+            // SKIDKA QILISH UCHUN INPUTGA NARXNI KIRITIB QO'YADI
+            document.getElementById('finish-rent-cost-input').value = calc.cost; 
+            
+            document.getElementById('finish-rent-active-id').value = activeId; 
+            document.getElementById('modal-finish-rent').style.display = 'flex'; 
+        }
+
+        // YANGILANGAN YAKUNLASH FUNKSIYASI (NASIYA HAM QO'SHILDI)
         function confirmFinishRental(payType) {
-            let activeId = parseInt(document.getElementById('finish-rent-active-id').value); let act = ACTIVE_RENTALS.find(x => x.id === activeId); if(!act) return; let calc = calculateRentalCost(act.start_time, act.price, act.type);
+            let activeId = parseInt(document.getElementById('finish-rent-active-id').value); 
+            let act = ACTIVE_RENTALS.find(x => x.id === activeId); 
+            if(!act) return; 
+            let calc = calculateRentalCost(act.start_time, act.price, act.type);
+            
+            // KASSA YOKI QARZGA INPUTDAGI (SKIDKA QILINGAN) SUMMANI OLADI
+            let finalCost = parseInt(document.getElementById('finish-rent-cost-input').value) || 0;
+            
             ensureSafeData();
-            SESSION.sales.push({ id: Date.now(), time: new Date().toLocaleTimeString(), items: [{name: `Arenda: ${act.item_name} (${calc.timeStr})`, cartQty: 1, customPrice: calc.cost}], total: calc.cost, profit: calc.cost, type: payType, note: `Ijara mijozi: ${act.client_name}` });
-            ACTIVE_RENTALS = ACTIVE_RENTALS.filter(x => x.id !== activeId); closeModal('modal-finish-rent'); saveToCloud(); renderRentalTab(); renderStats(); myAlert("Yakunlandi va Hisobotga qo'shildi!");
+
+            // AGAR NASIYAGA OLSA, QARZ DAFTARIGA QO'SHADI
+            if (payType === 'nasiya') {
+                let d = DEBTS.find(x => x.name.toLowerCase() === act.client_name.toLowerCase()); 
+                if (!d) { 
+                    d = { id: Date.now(), name: act.client_name, phone: act.client_phone || '', balance: 0, history: [] }; 
+                    DEBTS.push(d); 
+                } 
+                d.balance += finalCost; 
+                d.history.push({ 
+                    date: new Date().toLocaleString(), 
+                    type: 'Nasiya xarid (Ijara)', 
+                    amount: finalCost, 
+                    items: [{name: `Arenda: ${act.item_name} (${calc.timeStr})`, cartQty: 1, customPrice: finalCost}] 
+                }); 
+                renderDebts();
+            }
+
+            // KASSAGA URADI
+            SESSION.sales.push({ 
+                id: Date.now(), 
+                time: new Date().toLocaleTimeString(), 
+                items: [{name: `Arenda: ${act.item_name} (${calc.timeStr})`, cartQty: 1, customPrice: finalCost}], 
+                total: finalCost, 
+                profit: finalCost, 
+                type: payType, 
+                note: `Ijara mijozi: ${act.client_name}` 
+            });
+            
+            ACTIVE_RENTALS = ACTIVE_RENTALS.filter(x => x.id !== activeId); 
+            closeModal('modal-finish-rent'); 
+            saveToCloud(); 
+            renderRentalTab(); 
+            renderStats(); 
+            myAlert("Ijara yakunlandi va Hisobotga tushdi!");
         }
 
         function refreshUI() { if (document.getElementById('screen-admin').classList.contains('active')) { renderKassa(); renderStock(); renderStats(); renderDebts(); renderClientsTab(); updateCartUI(); renderOnlineOrders(); if(document.getElementById('tab-sozlamalar').classList.contains('active-tab')) updateMiniStats(); if(document.getElementById('tab-arenda').classList.contains('active-tab')) renderRentalTab(); } if (document.getElementById('screen-client').classList.contains('active')) { if (activeClientCat) renderClientProducts(activeClientCat); else renderClientCategories(); updateClientCartUI(); } const b = document.getElementById('nav-badge'); const c = ORDERS ? ORDERS.length : 0; if (c > 0) { b.style.display = 'block'; b.innerText = c; } else b.style.display = 'none'; }
@@ -1124,18 +1171,7 @@
         function updateClientDay(day) { if(!curClientId) return; const c = CLIENTS.find(x => x.id == curClientId); if(c) { c.day = day; saveToCloud(); renderClientsTab(); myAlert("Mijoz kuni o'zgartirildi!"); } }
         function startClientSale() { if(!curClientId) return; activeClientForSale = CLIENTS.find(x => x.id == curClientId); document.getElementById('active-client-name').innerText = activeClientForSale.name; document.getElementById('active-client-banner').style.display = 'flex'; closeModal('modal-client-info'); switchTab('kassa', document.querySelector('.bottom-nav button')); }
         function clearActiveClient() { activeClientForSale = null; document.getElementById('active-client-banner').style.display = 'none'; }
-        
-        function renderStats() { 
-            ensureSafeData();
-            let s = SESSION.sales;
-            document.getElementById('stat-naqd').innerText = s.filter(x => x && x.type == 'naqd').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
-            document.getElementById('stat-plastik').innerText = s.filter(x => x && x.type == 'plastik').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
-            document.getElementById('stat-nasiya').innerText = s.filter(x => x && x.type == 'nasiya').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
-            document.getElementById('stat-klient').innerText = s.filter(x => x && (x.type == 'klient' || (x.note && x.note.includes('Ijara')))).reduce((a, b) => a + (b.total||0), 0).toLocaleString(); 
-            let umJami = s.reduce((a, b) => a + (b.total||0), 0); 
-            document.getElementById('stat-total').innerText = umJami.toLocaleString() + " so'm"; 
-            document.getElementById('stat-profit').innerText = s.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; 
-        } 
+        function renderStats() { ensureSafeData(); let s = SESSION.sales; document.getElementById('stat-naqd').innerText = s.filter(x => x && x.type == 'naqd').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); document.getElementById('stat-plastik').innerText = s.filter(x => x && x.type == 'plastik').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); document.getElementById('stat-nasiya').innerText = s.filter(x => x && x.type == 'nasiya').reduce((a, b) => a + (b.total||0), 0).toLocaleString(); document.getElementById('stat-klient').innerText = s.filter(x => x && (x.type == 'klient' || (x.note && x.note.includes('Ijara')))).reduce((a, b) => a + (b.total||0), 0).toLocaleString(); let umJami = s.reduce((a, b) => a + (b.total||0), 0); document.getElementById('stat-total').innerText = umJami.toLocaleString() + " so'm"; document.getElementById('stat-profit').innerText = s.reduce((a, b) => a + (b.profit || 0), 0).toLocaleString() + " so'm"; } 
         
         function closeDay() { 
             myConfirm("Kunni yopmoqchimisiz?", () => { 
@@ -1174,8 +1210,7 @@
             }); 
         } 
         
-        function renderArchive(t) { ensureSafeData(); const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = t === 'day' ? (i.totalSum || ((i.totalNaqd||0) + (i.totalPlastik||0) + (i.totalNasiya||0) + (i.totalKlient||0))) : 0; let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } 
-        function buildAndShowTable(ti, tr, isT=false) { document.getElementById('archive-title').innerText = ti; if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; [...tr].reverse().forEach(s => { if(!s) return; let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${(s.total||0).toLocaleString()}</b><br><span class="tag-${s.type}">${(s.type||"").toUpperCase()}</span></td>${b}</tr>`; }); h += `</tbody></table>`; document.getElementById('archive-detail-content').innerHTML = h; document.getElementById('modal-archive-detail').style.display = 'flex'; } 
+        function renderArchive(t) { ensureSafeData(); const d = (t == 'day' ? ARCHIVES.daily : (t == 'week' ? ARCHIVES.weekly : ARCHIVES.monthly)) || []; document.getElementById('archive-list').innerHTML = d.slice().reverse().map((i, idx) => { let total = t === 'day' ? (i.totalSum || ((i.totalNaqd||0) + (i.totalPlastik||0) + (i.totalNasiya||0) + (i.totalKlient||0))) : 0; let displayHtml = t === 'day' ? `<div style="text-align:right;"><div>Savdo: <b>${total.toLocaleString()}</b></div><div style="font-size:12px; color:var(--green)">Foyda: ${(i.profit || 0).toLocaleString()}</div></div>` : `<b style="color:var(--green)">${(i.profit || i.summaryProfit).toLocaleString()}</b>`; return `<div class="card flex-between" onclick="showArchiveDetails('${t}',${d.length - 1 - idx})"><b>${i.date}</b>${displayHtml}</div>`; }).join(''); } function showTodayDetails() { buildAndShowTable("Bugungi", SESSION.sales, true); } function showArchiveDetails(t, idx) { if (t !== 'day') return myAlert("Faqat kunlikda bor."); buildAndShowTable("Arxiv: " + ARCHIVES.daily[idx].date, ARCHIVES.daily[idx].details); } function buildAndShowTable(ti, tr, isT=false) { document.getElementById('archive-title').innerText = ti; if (!tr || !tr.length) { document.getElementById('archive-detail-content').innerHTML = "<p>Bo'sh</p>"; document.getElementById('modal-archive-detail').style.display = 'flex'; return; } let h = `<table class="report-table"><thead><tr><th>Vaqt</th><th>Tovar</th><th>Summa</th>${isT ? '<th></th>' : ''}</tr></thead><tbody>`; [...tr].reverse().forEach(s => { if(!s) return; let l = s.items && s.items.length ? s.items.map(i => `${i.name} x${i.cartQty}`).join('<br>') : (s.note ? `<i>${s.note}</i>` : '-'); let b = isT ? `<td><button onclick="returnSale(${s.id})" style="background:red;color:white;border:none;padding:5px;border-radius:5px;font-size:10px;">VOZVRAT</button></td>` : ''; h += `<tr><td>${s.time}</td><td>${l}</td><td><b>${(s.total||0).toLocaleString()}</b><br><span class="tag-${s.type}">${(s.type||"").toUpperCase()}</span></td>${b}</tr>`; }); h += `</tbody></table>`; document.getElementById('archive-detail-content').innerHTML = h; document.getElementById('modal-archive-detail').style.display = 'flex'; } 
         function returnSale(id) { myConfirm("Vozvrat qilasizmi?", () => { ensureSafeData(); const idx = SESSION.sales.findIndex(s => s && s.id === id); if (idx === -1) return; const s = SESSION.sales[idx]; if (s.items) s.items.forEach(i => { const d = DB.find(x => x.id === i.id); if (d) d.qty += i.cartQty; }); SESSION.sales.splice(idx, 1); saveToCloud(); refreshUI(); closeModal('modal-archive-detail'); myAlert("Vozvrat qilindi!"); }); }
         
         function renderClientCategories() { activeClientCat = null; document.getElementById('client-title').innerText = "KATEGORIYALAR"; document.getElementById('client-back-btn').style.display = 'none'; const c = [...new Set(DB.map(p => p.cat))]; document.getElementById('client-view-container').innerHTML = c.map(x => `<div class="cat-card" onclick="renderClientProducts('${x}')"><i class="fas fa-folder"></i><b>${x}</b></div>`).join(''); } 
